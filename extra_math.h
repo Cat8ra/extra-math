@@ -3,6 +3,7 @@
 #include <cmath>
 #include <string>
 #include <ctime>
+
 /// <summary>
 /// An implementation of complex number (using long double).
 /// </summary>
@@ -28,6 +29,13 @@ struct Complex {
     Complex(long double n) { Real = n; }
     Complex(long double a, long double b) { Real = a; Imaginary = b; }
     
+    bool operator ==(Complex right) {
+        return this->Real == right.Real && this->Imaginary == right.Imaginary;
+    }
+    bool operator !=(Complex right) {
+        return this->Real != right.Real || this->Imaginary != right.Imaginary;
+    }
+
     Complex operator =(Complex right) {
         if (this == &right)
             return *this;
@@ -39,6 +47,9 @@ struct Complex {
         }
     }
 
+    Complex operator +() {
+        return *this;
+    }
     Complex operator -() {
         Complex Res = Complex();
         Res.Real = -Real;
@@ -80,15 +91,36 @@ struct Complex {
         return Res;
     }
 
-    Complex operator /=(unsigned int b) {
-        *this = *this / Complex(b);
-        return *this;
-    }
     Complex operator +=(Complex b) {
         Real += b.Real;
         Imaginary += b.Imaginary;
 
         return *this;
+    }
+    Complex operator -=(Complex b) {
+        Real -= b.Real;
+        Imaginary -= b.Imaginary;
+
+        return *this;
+    }
+
+    Complex operator *=(unsigned int b) {
+        *this = *this * Complex(b);
+        return *this;
+    }
+    Complex operator /=(unsigned int b) {
+        *this = *this / Complex(b);
+        return *this;
+    }
+
+    static Complex Abs(Complex z){
+        return sqrt(z.Real * z.Real + z.Imaginary * z.Imaginary);
+    }
+    std::string ToString() {
+        if (Imaginary < 0)
+            return std::to_string(Real) + " - " + std::to_string(abs(Imaginary)) + 'i';
+        else
+            return std::to_string(Real) + " + " + std::to_string(Imaginary) + 'i';
     }
 
     long double Real = 0;
@@ -495,7 +527,7 @@ struct UltraLong {
             unsigned long long n = right.ToULONG();
 
             UltraLong Res = *this;
-            Res.SuperRightShift((unsigned int)(n / BITS_IN_UINT));
+            Res = Res.SuperRightShift((unsigned int)(n / BITS_IN_UINT));
 
             n %= BITS_IN_UINT;
             unsigned int mod = 1u << n;
@@ -510,6 +542,25 @@ struct UltraLong {
             return Res;
         
         }
+        UltraLong operator <<(UltraLong right) {
+
+            unsigned long long n = right.ToULONG();
+
+            UltraLong Res = *this;
+            Res = Res.SuperLeftShift((unsigned int)(n / BITS_IN_UINT));
+
+            n %= BITS_IN_UINT;
+            unsigned int mod = 1u << (BITS_IN_UINT - n);
+
+            for (unsigned int i = LENGTH - 1; i > 0; i--)
+            {
+                Res.Value[i] <<= n;
+                Res.Value[i] += Res.Value[i - 1] / mod;
+            }
+
+            return Res;
+
+        }
 
         bool isEven() {
             return this->Value[0] == 0;
@@ -523,6 +574,7 @@ struct UltraLong {
         /// </summary>
         /// <returns>The remainder after dividing a to b-th power by mod</returns>
         static UltraLong ModPow(UltraLong a, UltraLong b, UltraLong mod) {
+            if (mod == 0) { throw "UltraLong modulo by zero."; }
             if (mod == One) {
                 return Zero;
             }
@@ -556,6 +608,15 @@ struct UltraLong {
             return LENGTH > 1 ? this->Value[1] * UINT_RANGE + this->Value[0] : this->Value[0];
         }
 
+        long double ToLongDouble() {
+            long double ans = 0;
+            for (unsigned i = LENGTH - 1; i < LENGTH; i--)
+            {
+                ans += this->Value[i] * pow(UINT_RANGE, i);
+            }
+            return ans;
+        }
+
         /// <summary>
         /// Cast UltraLong to string.
         /// </summary>
@@ -582,6 +643,56 @@ struct UltraLong {
 
         }
 
+        static long double Divide(UltraLong a, UltraLong b) {
+            static const unsigned int BASE = 1000000000;
+            UltraLong div = a / b;
+            long double ans = div.ToLongDouble();
+            UltraLong mod = a - div * b;
+            UltraLong div2 = a * BASE / b - div * BASE;
+            ans += div2.ToLongDouble() / BASE;
+            UltraLong div3 = a * BASE * BASE / b - div * BASE * BASE - div2 * BASE;
+            ans += div3.ToLongDouble() / BASE / BASE;
+            return ans;
+        }
+
+        static long double Log(UltraLong n) {
+            if (n == 0) {
+                throw "Logarithm of zero is minus infinity.";
+            }
+            long double x = ((n - 1) / (n + 1)).ToLongDouble();
+            long double x_2 = x * x;
+            long double ans = 0;
+            unsigned int s = 1;
+            for (unsigned int i = 0; i < LOG_PRECISE; i++)
+            {
+                ans += x / s;
+                x *= x_2;
+                s += 2;
+            }
+            return ans * 2;
+        }
+
+        static UltraLong Sqrt(UltraLong n) {
+
+            if (n < 2) return n;
+        
+            UltraLong L = 0, R = n;
+            
+            while (R - L > 1) {
+                
+                UltraLong M = (L + R).RightShift(1);
+                
+                if (M * M > n)
+                    R = M;
+                else 
+                    L = M;
+                
+            }
+
+            return L;
+
+        }
+
     private:
         
         static const unsigned int LENGTH = 32;
@@ -590,6 +701,7 @@ struct UltraLong {
         static const unsigned long long UINT_RANGE = 4294967296;
         static const unsigned long long SUINT_RANGE = 65536;
         static const unsigned int BITS_IN_UINT = 32;
+        static const unsigned int LOG_PRECISE = 10;
 
         static inline long double PI = 3.1415926535897932389l;
         static inline bool precalc = false;
@@ -749,3 +861,288 @@ struct UltraLong {
 UltraLong UltraLong::One = UltraLong(1);
 UltraLong UltraLong::Zero = UltraLong(0);
 UltraLong UltraLong::MinusOne = UltraLong(-1);
+
+enum PRIME_TESTS_OPTIMISE_LEVELS {O1, O2, O3};
+const inline PRIME_TESTS_OPTIMISE_LEVELS PRIME_TESTS_OPTIMISE_LEVEL = O3;
+
+template <class T>
+T Sqrt(T n) {
+    return (T)sqrtl((long double)n);
+}
+
+template <>
+UltraLong Sqrt(UltraLong n) {
+    return UltraLong::Sqrt(n);
+}
+
+template <class T>
+T MillerUpperBound_O1(T n) {
+    return 2 * powl(logl(n), 2);
+}
+
+template <>
+UltraLong MillerUpperBound_O1<UltraLong>(UltraLong n) {
+    return (unsigned long long)floorl(2 * powl(UltraLong::Log(n), 2));
+}
+
+template <class T>
+T MillerUpperBound_O2(T n) {
+    long double ans = logl(n);
+    return  ans * logl(ans) / logl(2);
+}
+
+template <>
+UltraLong MillerUpperBound_O2<UltraLong>(UltraLong n) {
+    long double ans = UltraLong::Log(n);
+    return (unsigned long long)floorl(ans * logl(ans) / logl(2));
+}
+
+template <class T>
+bool IsPrimePower(T n) {
+    return false;
+}
+
+template <class T>
+T ModPow(T a, T b, T mod){
+    if (mod == 0) { throw "ModPow: mod is zero"; }
+    if (a == 0 || mod == 1) { return 0; }
+    if (b == 0) { return 1; }
+    if (b % 2 == 1) { return ModPow<T>(a * a % mod, b / 2, mod) * a % mod; }
+    return ModPow<T>(a * a % mod, b / 2, mod);
+}
+
+template <>
+UltraLong ModPow<UltraLong>(UltraLong a, UltraLong b, UltraLong mod) {
+    return UltraLong::ModPow(a, b, mod);
+}
+
+template <class T>
+bool IsStrongPseudoprime(T n, T base) {
+
+    T exp = n - 1;
+    T ost_1 = exp;
+    T res = ModPow<T>(base, exp, n);
+
+    if (res != 1)
+        return false;
+
+    while (true)
+    {
+        exp = exp / 2;
+        res = ModPow<T>(base, exp, n);
+
+        if (res == ost_1)
+            return true;
+
+        if (exp % 2 == 1)
+        {
+            res = UltraLong.ModPow(base, exp, n);
+            if (res == 1)
+                return true;
+
+            break;
+        }
+    }
+
+    return false;
+
+}
+
+template <class T>
+T SmallNextPrime(T base) {
+
+    T x = base + 1;
+
+    while (!SmallIsPrime(x))
+    {
+        x++;
+    }
+
+    return x;
+
+}
+
+template <class T>
+bool MillerTest(T n, PRIME_TESTS_OPTIMISE_LEVELS optimise_level = O2) {
+
+    if (IsPrimePower<T>(n)) {
+        return false;
+    }
+
+    T upper_bound;
+    
+    switch (optimise_level)
+    {
+    case O1: {
+        upper_bound = MillerUpperBound_O1(n); 
+        break;
+    }
+    default:
+        upper_bound = MillerUpperBound_O2(n);
+        break;
+    }
+
+    T base = 2;
+
+    while (base <= n) {
+    
+        if (!IsStrongPseudoprime<T>(n, base)) {
+            return false;
+        }
+
+        base = SmallNextPrime<T>(base);
+
+    }
+
+    return true;
+
+}
+
+template <class T>
+bool SmallIsPrime(T base) {
+    
+    if (base < 2) return false;
+
+    T sq_b = Sqrt<T>(base) + 1;
+    
+    for (T i = 2; i < sq_b; i++)
+        if (base % i == 0)
+            return false;
+
+    return true;
+
+}
+
+template <class T>
+T NextPrime(PRIME_TESTS_OPTIMISE_LEVELS optimize_level = O3) {
+    if (*this == (T)2) { return (T)3; }
+    if (*this < (T)2) { return (T)2; }
+    switch (optimize_level)
+    {
+    case O1: {
+        
+    }
+    default:
+        break;
+    }
+}
+
+template <class T>
+class Sequence {
+    public:
+        T next();
+        Sequence<T> renew();
+    private:
+        T start;
+        T now;
+        unsigned long long iter;
+};
+
+template <class T>
+class Arithmetic : public Sequence<T> {
+    public:
+        Arithmetic<T>(T start, T difference) {
+            this->start = start;
+            this->now = start;
+            this->difference = difference;
+            iter = 0;
+        }
+        T next() {
+            iter++;
+            T now1 = now;
+            now += difference;
+            return now1;
+        }
+        Arithmetic<T> renew() {
+            return Arithmetic<T>(start, difference);
+        }
+    private:
+        T start;
+        T now;
+        T difference;
+        unsigned long long iter;
+};
+
+template <class T>
+class Geometric : public Sequence<T> {
+    public:
+        Geometric(T start, T denominator) {
+            this->start = start;
+            this->now = start;
+            this->denominator = denominator;
+            iter = 0;
+        }
+        T next() {
+            iter++;
+            T now1 = now;
+            now *= denominator;
+            return now1;
+        }
+        Geometric<T> renew() {
+            return Geometric<T>(start, denominator);
+        }
+    private:
+        T start;
+        T now;
+        T denominator;
+        unsigned long long iter;
+};
+
+template <class T>
+class Fibonacci : public Sequence<T> {
+    public:
+        Fibonacci(T start = 0, T start1 = 1) {
+            this->start = start;
+            this->start1 = start1;
+            iter = 0;
+        }
+        T next() {
+            iter++;
+    
+            switch (iter) {
+                case 1: { /*now = start;*/ return start; }
+                case 2: { now = start1; prev = start; return start1; }
+            }
+            
+            T now1 = now + prev;
+            prev = now;
+            now = now1;
+    
+            return now;
+        }
+        Fibonacci<T> renew() {
+            return Fibonacci<T>(start, start1);
+        }
+    private:
+        T start;
+        T start1;
+        T prev;
+        T now;
+        unsigned long long iter;
+};
+
+template <class T>
+class Primes : public Sequence<T> {
+public:
+    Primes() {
+        this->start = T(2);
+        this->now = this->start;
+        iter = 0;
+    }
+    T next() {
+        iter++;
+
+        T now1 = now;
+        now = NextPrime<T>(now);
+        return now1;
+    }
+    Primes<T> renew() {
+        return Primes<T>();
+    }
+private:
+    T start;
+    T prev;
+    T now;
+    unsigned long long iter;
+};
+//Arithmetic<int> nat = Arithmetic<int>(1, 1);

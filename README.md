@@ -43,12 +43,31 @@ Actually, the `Complex` type is very restricted now because it is used only for 
 ### Description
 Random numbers generator. Create an object with `Random rnd = Random()` and use the functions below.
 ### Functions
-|Function|Return type|
-|:-:     |:-  |
-|`next_int()`| `int` |
-|`next_long()`| `long long` |
-|`next_uint()`| `unsigned int` |
+|Function      |Return type           |
+|:-:           |:-                    |
+|`next_int()`  | `int`                |
+|`next_long()` | `long long`          |
+|`next_uint()` | `unsigned int`       |
 |`next_ulong()`| `unsigned long long` |
 
+## Sequence
+### Description
+An infinite sequence of numbers. Template class. Actually, it is some kind of abstract class or interface with several implementations that you can use out of the box.
+### Functions
+Let `T` be a type of number.
+|Function |Return type  |Description|
+|:-:      |:-:          |:-         |
+|`next()` |`T`          |Returns the next number of the sequence.|
+|`renew()`|`Sequence<T>`|`seq.renew()` returns `Sequence` like `seq`, but it starts from the first number.|
+### Implementations
+#### Arithmetic
+An arithmetic progression. To create: `Arithmetic<T>(T a, T d)`, you will get the sequence: *a*, *a + d*, *a + 2d*, ...
+#### Geometric
+A geometric progression. To create: `Geometric<T>(T a, T d)`, you will get the sequence: *a*, *ad*, *ad<sup>2</sup>*, ...
+#### Fibonacci
+A Fibonacci sequence (each number is a sum of the two previous ones). To create: `Fibonacci<T>(T a, T b)`, you will get the sequence: *a*, *b*, *a + b*, *a + 2b*, *2a + 3b*, ...
+By default, `a = 0` and `b = 1`.
+#### Primes
+A prime number sequence. **NOT TESTED.** To create: `Primes()`, you will get the sequence: *2*, *3*, *5*, *7*, ...
 # Donate
 If you decided to donate, think again. But if you haven't changed your mind yet, then I say thank you for supporting for a developing project! You can contact me on cat8ra@gmail.com

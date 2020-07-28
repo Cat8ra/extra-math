@@ -113,8 +113,8 @@ struct Complex {
         return *this;
     }
 
-    static Complex Abs(Complex z){
-        return sqrt(z.Real * z.Real + z.Imaginary * z.Imaginary);
+    static long double Abs(Complex z){
+        return sqrtl(z.Real * z.Real + z.Imaginary * z.Imaginary);
     }
     std::string ToString() {
         if (Imaginary < 0)
@@ -391,6 +391,10 @@ struct UltraLong {
         }*/
         UltraLong operator *(UltraLong b) {
 
+            /*if (*this == UltraLong::Zero || b == UltraLong::Zero) {
+                return UltraLong();
+            }*/
+
             UltraLong Res = UltraLong();
 
             unsigned long long temp1[2 * LENGTH] = { 0 },
@@ -563,7 +567,7 @@ struct UltraLong {
         }
 
         bool isEven() {
-            return this->Value[0] == 0;
+            return this->Value[0] % 2 == 0;
         }
         bool isOdd() {
             return this->Value[0] == 1;
@@ -644,22 +648,14 @@ struct UltraLong {
         }
 
         static long double Divide(UltraLong a, UltraLong b) {
-            static const unsigned int BASE = 1000000000;
-            UltraLong div = a / b;
-            long double ans = div.ToLongDouble();
-            UltraLong mod = a - div * b;
-            UltraLong div2 = a * BASE / b - div * BASE;
-            ans += div2.ToLongDouble() / BASE;
-            UltraLong div3 = a * BASE * BASE / b - div * BASE * BASE - div2 * BASE;
-            ans += div3.ToLongDouble() / BASE / BASE;
-            return ans;
+            return a.ToLongDouble() / b.ToLongDouble();
         }
 
         static long double Log(UltraLong n) {
             if (n == 0) {
                 throw "Logarithm of zero is minus infinity.";
             }
-            long double x = ((n - 1) / (n + 1)).ToLongDouble();
+            long double x = Divide(n - 1, n + 1);
             long double x_2 = x * x;
             long double ans = 0;
             unsigned int s = 1;
@@ -776,7 +772,7 @@ struct UltraLong {
                 precalc = true;
                 unsigned int lg_n = 0;
                 unsigned int t_lg = 1;
-                while (t_lg < n) { ++lg_n; }
+                while (t_lg < n) { ++lg_n; t_lg <<= 1; }
                 calc_rev(n, lg_n);
             }
 
@@ -862,8 +858,8 @@ UltraLong UltraLong::One = UltraLong(1);
 UltraLong UltraLong::Zero = UltraLong(0);
 UltraLong UltraLong::MinusOne = UltraLong(-1);
 
-enum PRIME_TESTS_OPTIMISE_LEVELS {O1, O2, O3};
-const inline PRIME_TESTS_OPTIMISE_LEVELS PRIME_TESTS_OPTIMISE_LEVEL = O3;
+enum class PRIME_TESTS_OPTIMISE_LEVELS {O1, O2, O3};
+const inline PRIME_TESTS_OPTIMISE_LEVELS PRIME_TESTS_OPTIMISE_LEVEL = PRIME_TESTS_OPTIMISE_LEVELS::O3;
 
 template <class T>
 T Sqrt(T n) {
@@ -936,7 +932,7 @@ bool IsStrongPseudoprime(T n, T base) {
 
         if (exp % 2 == 1)
         {
-            res = UltraLong.ModPow(base, exp, n);
+            res = ModPow<T>(base, exp, n);
             if (res == 1)
                 return true;
 
@@ -949,11 +945,26 @@ bool IsStrongPseudoprime(T n, T base) {
 }
 
 template <class T>
+bool SmallIsPrime(T base) {
+
+    if (base < 2) return false;
+
+    T sq_b = Sqrt<T>(base) + 1;
+
+    for (T i = 2; i < sq_b; i++)
+        if (base % i == 0)
+            return false;
+
+    return true;
+
+}
+
+template <class T>
 T SmallNextPrime(T base) {
 
     T x = base + 1;
 
-    while (!SmallIsPrime(x))
+    while (!SmallIsPrime<T>(x))
     {
         x++;
     }
@@ -963,7 +974,7 @@ T SmallNextPrime(T base) {
 }
 
 template <class T>
-bool MillerTest(T n, PRIME_TESTS_OPTIMISE_LEVELS optimise_level = O2) {
+bool MillerTest(T n, PRIME_TESTS_OPTIMISE_LEVELS optimise_level = PRIME_TESTS_OPTIMISE_LEVEL) {
 
     if (IsPrimePower<T>(n)) {
         return false;
@@ -973,7 +984,7 @@ bool MillerTest(T n, PRIME_TESTS_OPTIMISE_LEVELS optimise_level = O2) {
     
     switch (optimise_level)
     {
-    case O1: {
+    case PRIME_TESTS_OPTIMISE_LEVELS::O1: {
         upper_bound = MillerUpperBound_O1(n); 
         break;
     }
@@ -986,7 +997,7 @@ bool MillerTest(T n, PRIME_TESTS_OPTIMISE_LEVELS optimise_level = O2) {
 
     while (base <= n) {
     
-        if (!IsStrongPseudoprime<T>(n, base)) {
+        if (!IsStrongPseudoprime<T>(n, upper_bound)) {
             return false;
         }
 
@@ -998,33 +1009,20 @@ bool MillerTest(T n, PRIME_TESTS_OPTIMISE_LEVELS optimise_level = O2) {
 
 }
 
+//TODO
 template <class T>
-bool SmallIsPrime(T base) {
+T NextPrime(T n, PRIME_TESTS_OPTIMISE_LEVELS optimize_level = PRIME_TESTS_OPTIMISE_LEVEL) {
     
-    if (base < 2) return false;
-
-    T sq_b = Sqrt<T>(base) + 1;
+    if (n == (T)2) return (T)3;
+    if (n < (T)2) return (T)2;
     
-    for (T i = 2; i < sq_b; i++)
-        if (base % i == 0)
-            return false;
+    T x = n + 2;
 
-    return true;
+    while (!MillerTest(x, optimize_level))
+        x += 2;
+    
+    return x;
 
-}
-
-template <class T>
-T NextPrime(PRIME_TESTS_OPTIMISE_LEVELS optimize_level = O3) {
-    if (*this == (T)2) { return (T)3; }
-    if (*this < (T)2) { return (T)2; }
-    switch (optimize_level)
-    {
-    case O1: {
-        
-    }
-    default:
-        break;
-    }
 }
 
 template <class T>
@@ -1146,3 +1144,17 @@ private:
     unsigned long long iter;
 };
 //Arithmetic<int> nat = Arithmetic<int>(1, 1);
+
+struct Permutation {
+    Permutation(int x[]) {
+        int n = sizeof(x) / sizeof(int);
+
+    }
+private:
+    int x[];
+};
+
+struct Matrix {
+
+
+};

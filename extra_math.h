@@ -3,13 +3,13 @@
 #include <cmath>
 #include <string>
 #include <ctime>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <map>
 
-/// <summary>
-/// An implementation of complex number (using long double).
-/// </summary>
-struct Random {
-    Random() { srand(time(NULL)); }
-    Random(unsigned int n) { srand(n); }
+namespace Random {
+    void Initialize() { srand((unsigned int)time(NULL)); }
     int next_int() {
         return rand() + rand() * RAND_MAX + rand() * RAND_MAX * RAND_MAX;
     }
@@ -24,11 +24,14 @@ struct Random {
     }
 };
 
+/// <summary>
+/// An implementation of complex number (using long double).
+/// </summary>
 struct Complex {
     Complex() {}
     Complex(long double n) { Real = n; }
     Complex(long double a, long double b) { Real = a; Imaginary = b; }
-    
+
     bool operator ==(Complex right) {
         return this->Real == right.Real && this->Imaginary == right.Imaginary;
     }
@@ -56,7 +59,7 @@ struct Complex {
         Res.Imaginary = -Imaginary;
         return Res;
     }
-    
+
     Complex operator +(Complex b) {
         Complex Res = Complex();
 
@@ -70,7 +73,7 @@ struct Complex {
 
         Res.Real = Real - b.Real;
         Res.Imaginary = Imaginary - b.Imaginary;
-        
+
         return Res;
     }
 
@@ -127,7 +130,6 @@ struct Complex {
     long double Imaginary = 0;
 
 };
-
 //Unsigned ultra long realization
 /// <summary>
 /// An implementation of unsigned long arithmetic.
@@ -158,13 +160,23 @@ struct UltraLong {
         /// UltraLong will be equal ~n + 1, so n + (-n) = 0.
         /// </param>
         UltraLong(int n) {
-            if (n < 0) { 
-                Value[0] = (unsigned int)(-n); 
-                *this = -*this; 
+            if (n < 0) {
+                Value[0] = (unsigned int)(-n);
+                *this = -*this;
             }
-            else 
+            else
                 Value[0] = (unsigned int)n;
-        } 
+        }
+        UltraLong(long long n) {
+            if (n < 0) {
+                Value[0] = (-n) % UINT_RANGE;
+                Value[1] = (unsigned int)((-n) / UINT_RANGE);
+                *this = -*this;
+            }
+            else
+                Value[0] = n % UINT_RANGE;
+                Value[1] = (unsigned int)(n / UINT_RANGE);
+        }
         /*TODO*/
         /// <summary>
         /// UltraLong constructor.
@@ -198,15 +210,19 @@ struct UltraLong {
             }
         }
         bool operator <(UltraLong right) {
-            for (unsigned int i = LENGTH - 1; i < LENGTH; i--){
+            unsigned int i = LENGTH;
+            while (i != 0) {
+                i--;
                 if (this->Value[i] < right.Value[i]) return true;
                 if (this->Value[i] > right.Value[i]) return false;
             }
 
             return false;
         }
-        bool operator >(UltraLong right) {
-            for (unsigned int i = LENGTH - 1; i < LENGTH; i--){
+        bool operator >(UltraLong right){
+            unsigned int i = LENGTH;
+            while (i != 0) {
+                i--;
                 if (this->Value[i] > right.Value[i]) return true;
                 if (this->Value[i] < right.Value[i]) return false;
             }
@@ -214,7 +230,9 @@ struct UltraLong {
             return false;
         }
         bool operator >=(UltraLong right) {
-            for (unsigned int i = LENGTH - 1; i < LENGTH; i--){
+            unsigned int i = LENGTH;
+            while (i != 0) {
+                i--;
                 if (this->Value[i] > right.Value[i]) return true;
                 if (this->Value[i] < right.Value[i]) return false;
             }
@@ -222,7 +240,9 @@ struct UltraLong {
             return true;
         }
         bool operator <=(UltraLong right) {
-            for (unsigned int i = LENGTH - 1; i < LENGTH; i--) {
+            unsigned int i = LENGTH;
+            while (i != 0) {
+                i--;
                 if (this->Value[i] < right.Value[i]) return true;
                 if (this->Value[i] > right.Value[i]) return false;
             }
@@ -240,7 +260,7 @@ struct UltraLong {
                 return *this;
             }
         }
-        
+
         UltraLong operator -() {
 
             UltraLong Res = *this;
@@ -271,7 +291,7 @@ struct UltraLong {
             return *this;
 
         }
-        
+
         UltraLong operator +(UltraLong b) {
 
             UltraLong Res = UltraLong();
@@ -312,25 +332,44 @@ struct UltraLong {
             return Res;
 
         }
-        
+
         UltraLong operator *(unsigned int b) {
 
             UltraLong Res = UltraLong();
 
-            unsigned long long Overflow = 0, 
+            unsigned long long Overflow = 0,
                                Overflow1 = 0;
 
             for (unsigned int i = 0; i < LENGTH; i++)
             {
                 Overflow1 = (unsigned long long)this->Value[i] * b + Overflow;
 
-                if (Overflow1 < Overflow) 
+                if (Overflow1 < Overflow)
                     Overflow = Overflow1 + 1;
-                else 
+                else
                     Overflow = Overflow1;
 
                 Res.Value[i] = Overflow % UINT_RANGE;
                 Overflow /= UINT_RANGE;
+            }
+
+            return Res;
+
+        }
+        UltraLong operator /(unsigned int b) {
+            
+            UltraLong Res = UltraLong();
+
+            unsigned int i = LENGTH;
+            unsigned long long prev = 0;
+            
+            while (i != 0) {
+                i--;
+            
+                prev += this->Value[i];
+                
+                Res.Value[i] = (unsigned int)(prev / b);
+                prev = (prev % b) * UINT_RANGE;
             }
 
             return Res;
@@ -395,11 +434,14 @@ struct UltraLong {
                 return UltraLong();
             }*/
 
+
+            LastMultOverflow = false;
+
             UltraLong Res = UltraLong();
 
-            unsigned long long temp1[2 * LENGTH] = { 0 },
-                temp2[2 * LENGTH] = { 0 },
-                temp0[2 * LENGTH] = { 0 };
+            unsigned long long temp1[4 * LENGTH] = { 0 },
+                               temp2[4 * LENGTH] = { 0 },
+                               temp0[4 * LENGTH] = { 0 };
 
             for (unsigned int i = 0; i < LENGTH; i++)
             {
@@ -411,13 +453,20 @@ struct UltraLong {
 
             multiply(temp1, temp2, temp0);
 
-            for (unsigned int i = 1; i < 2 * LENGTH; i++)
+            for (unsigned int i = 1; i < 4 * LENGTH; i++)
             {
                 temp0[i] += temp0[i - 1] / SUINT_RANGE;
                 temp0[i - 1] %= SUINT_RANGE;
             }
 
             temp0[2 * LENGTH - 1] %= SUINT_RANGE;
+
+
+            for (size_t i = 2 * LENGTH; i < 4 * LENGTH; i++)
+                if (temp0[i] != 0) {
+                    LastMultOverflow = true;
+                    break;
+                }
 
             for (unsigned int i = 0; i < LENGTH; i++)
             {
@@ -434,14 +483,16 @@ struct UltraLong {
 
             if (*this < b) { return Zero; }
 
-            UltraLong L = 0;
+            std::pair<unsigned int, unsigned int> lead_b = Lead(b);
+
+            UltraLong L = (*this / (lead_b.first + 1)).SuperRightShift(lead_b.second);
             UltraLong R = *this;
 
             while (R - L > 1)
             {
-                UltraLong M = (L + R).RightShift(1);
+                UltraLong M = UltraLong::Middle(L, R);
 
-                if (M * b > * this) {
+                if (M * b > *this || LastMultOverflow) {
                     R = M;
                 }
                 else {
@@ -452,17 +503,32 @@ struct UltraLong {
             return L;
 
         }
-        
+
+        unsigned int operator %(unsigned int b) {
+            
+            unsigned int i = LENGTH;
+            unsigned long long prev = 0;
+
+            while (i != 0) {
+                i--;
+                prev *= UINT_RANGE;
+                prev += this->Value[i];
+                prev = prev % b;
+            }
+
+            return (unsigned int)prev;
+
+        }
         UltraLong operator %(UltraLong b) {
             return *this - *this / b * b;
         }
 
         UltraLong operator ^(UltraLong b) {
             UltraLong Res = UltraLong();
-            
+
             for (unsigned int i = 0; i < LENGTH; i++)
                 Res.Value[i] = this->Value[i] ^ b.Value[i];
-            
+
             return Res;
         }
         UltraLong operator &(UltraLong b) {
@@ -503,6 +569,10 @@ struct UltraLong {
             *this = *this * right;
             return *this;
         }
+        UltraLong operator *=(unsigned int right) {
+            *this = *this * right;
+            return *this;
+        }
         UltraLong operator /=(UltraLong right) {
             *this = *this / right;
             return *this;
@@ -524,11 +594,11 @@ struct UltraLong {
         UltraLong operator |=(UltraLong right) {
             *this = *this | right;
             return *this;
-        }
+        } 
 
-        UltraLong operator >>(UltraLong right) {
-        
-            unsigned long long n = right.ToULONG();
+        UltraLong operator >>(unsigned long long right) {
+
+            unsigned long long n = right;
 
             UltraLong Res = *this;
             Res = Res.SuperRightShift((unsigned int)(n / BITS_IN_UINT));
@@ -544,11 +614,11 @@ struct UltraLong {
             }
 
             return Res;
-        
-        }
-        UltraLong operator <<(UltraLong right) {
 
-            unsigned long long n = right.ToULONG();
+        }
+        UltraLong operator <<(unsigned long long right) {
+
+            unsigned long long n = right;
 
             UltraLong Res = *this;
             Res = Res.SuperLeftShift((unsigned int)(n / BITS_IN_UINT));
@@ -596,7 +666,7 @@ struct UltraLong {
             }
 
         }
-        
+
         /// <summary>
         /// Cast UltraLong to unsigned int.
         /// </summary>
@@ -614,8 +684,10 @@ struct UltraLong {
 
         long double ToLongDouble() {
             long double ans = 0;
-            for (unsigned i = LENGTH - 1; i < LENGTH; i--)
+            unsigned int i = LENGTH;
+            while (i != 0)
             {
+                i--;
                 ans += this->Value[i] * pow(UINT_RANGE, i);
             }
             return ans;
@@ -629,17 +701,22 @@ struct UltraLong {
 
             std::string s = "";
 
-            while (*this > 0)
+            UltraLong n = *this;
+
+            while (n > 0)
             {
-                unsigned int digit = (*this % 10).ToUINT();
+                unsigned int digit = n % 10;
                 s += std::to_string(digit);
-                *this = *this / 10;
+                n = n / 10;
             }
 
             if (s == "") s = "0";
 
             std::string s1 = "";
-            for (unsigned long long i = s.size(); i <= s.size(); i--) {
+            unsigned long long i = s.size();
+            while (i != 0)
+            {
+                i--;
                 s1 += s[i];
             }
 
@@ -671,26 +748,36 @@ struct UltraLong {
         static UltraLong Sqrt(UltraLong n) {
 
             if (n < 2) return n;
-        
+
             UltraLong L = 0, R = n;
-            
+
             while (R - L > 1) {
-                
-                UltraLong M = (L + R).RightShift(1);
-                
+
+                UltraLong M = (L + R) / 2;
+
                 if (M * M > n)
                     R = M;
-                else 
+                else
                     L = M;
-                
+
             }
 
             return L;
 
         }
 
+        static UltraLong Parse(std::string s) {
+            UltraLong ans = UltraLong();
+            unsigned long long size = s.size();
+            for (unsigned long long i = 0; i < size; i++)
+            {
+                ans *= 10;
+                ans += s[i] - '0';
+            }
+            return ans;
+        }
     private:
-        
+
         static const unsigned int LENGTH = 32;
         static const unsigned int UPPER_BOUND_LENGTH = 32;
 
@@ -699,20 +786,36 @@ struct UltraLong {
         static const unsigned int BITS_IN_UINT = 32;
         static const unsigned int LOG_PRECISE = 10;
 
-        static inline long double PI = 3.1415926535897932389l;
-        static inline bool precalc = false;
+        static long double PI;
+        static bool precalc;
 
-        //static inline unsigned int KaratsubaIterationLength = LENGTH; 
-        
+        //static inline unsigned int KaratsubaIterationLength = LENGTH;
+
         unsigned int Value[LENGTH] = { 0 };
-        
+
         static UltraLong One;
         static UltraLong Zero;
         static UltraLong MinusOne;
 
-        static inline unsigned int rev[2 * UPPER_BOUND_LENGTH] = { 0 };
-        static inline Complex wlen_pw[2 * UPPER_BOUND_LENGTH] = { Complex() };
-        
+        static unsigned int rev[4 * UPPER_BOUND_LENGTH];
+        static Complex wlen_pw[4 * UPPER_BOUND_LENGTH];
+
+        static bool LastMultOverflow;
+
+        static UltraLong Middle(UltraLong a, UltraLong b) {
+            return a + (b - a) / 2;
+        }
+
+        static std::pair<unsigned int, unsigned int> Lead(UltraLong a) {
+            unsigned int i = LENGTH;
+            while (i != 0) {
+                i--;
+                if (a.Value[i] != 0)
+                    return { a.Value[i], i };
+            }
+            return { 0, 0 };
+        }
+
         static void swap(Complex* a, Complex* b) {
 
             if (a == b) { return; }
@@ -741,8 +844,8 @@ struct UltraLong {
 
         static void multiply(const unsigned long long a[], const unsigned long long b[], unsigned long long res[]) {
 
-            Complex fa[2 * UPPER_BOUND_LENGTH] = { Complex() }, 
-                    fb[2 * UPPER_BOUND_LENGTH] = { Complex() };
+            Complex fa[4 * UPPER_BOUND_LENGTH] = { Complex() },
+                    fb[4 * UPPER_BOUND_LENGTH] = { Complex() };
 
             for (unsigned int i = 0; i < 2 * LENGTH; i++)
             {
@@ -750,9 +853,9 @@ struct UltraLong {
                 fb[i].Real = (long double)b[i];
             }
 
-            unsigned int n = 2 * UPPER_BOUND_LENGTH;
+            unsigned int n = 4 * UPPER_BOUND_LENGTH;
 
-            FastFourierTransformation(fa, n, false), 
+            FastFourierTransformation(fa, n, false),
             FastFourierTransformation(fb, n, false);
 
             for (size_t i = 0; i < n; ++i)
@@ -760,14 +863,13 @@ struct UltraLong {
 
             FastFourierTransformation(fa, n, true);
 
-
-            for (size_t i = 0; i < 2 * LENGTH; ++i)
+            for (size_t i = 0; i < 4 * LENGTH; ++i)
                 res[i] = unsigned long long(fa[i].Real + 0.5);
-
-        }
-        
-        static void FastFourierTransformation(Complex* a, unsigned int n, bool reverse = false) {
             
+        }
+
+        static void FastFourierTransformation(Complex* a, unsigned int n, bool reverse = false) {
+
             if (!precalc) {
                 precalc = true;
                 unsigned int lg_n = 0;
@@ -779,7 +881,7 @@ struct UltraLong {
                 for (unsigned int i = 0; i < n; ++i)
                     if (i < rev[i])
                         swap(&a[i], &a[rev[i]]);
-            
+
 
             for (unsigned int len = 2; len <= n; len <<= 1) {
 
@@ -803,20 +905,25 @@ struct UltraLong {
                         *pu += t;
                     }
                 }
-                
+
             }
 
             if (reverse)
                 for (unsigned int i = 0; i < n; ++i)
                     a[i] /= n;
         }
-        
+
         UltraLong SuperLeftShift(unsigned int n) {
+            if (n > LENGTH - 1)
+                return 0;
 
             UltraLong Res = UltraLong();
 
-            for (unsigned int i = LENGTH - 1 - n; i < LENGTH; i--)
+            unsigned int i = LENGTH - n;
+            while (i != 0) {
+                i--;
                 Res.Value[i + n] = this->Value[i];
+            } 
 
             return Res;
 
@@ -857,9 +964,14 @@ struct UltraLong {
 UltraLong UltraLong::One = UltraLong(1);
 UltraLong UltraLong::Zero = UltraLong(0);
 UltraLong UltraLong::MinusOne = UltraLong(-1);
+long double UltraLong::PI = 3.1415926535897932389l;
+bool UltraLong::precalc = false;
+unsigned int UltraLong::rev[4 * UltraLong::UPPER_BOUND_LENGTH];
+Complex UltraLong::wlen_pw[4 * UltraLong::UPPER_BOUND_LENGTH];
+bool UltraLong::LastMultOverflow = false;
 
 enum class PRIME_TESTS_OPTIMISE_LEVELS {O1, O2, O3};
-const inline PRIME_TESTS_OPTIMISE_LEVELS PRIME_TESTS_OPTIMISE_LEVEL = PRIME_TESTS_OPTIMISE_LEVELS::O3;
+const PRIME_TESTS_OPTIMISE_LEVELS PRIME_TESTS_OPTIMISE_LEVEL = PRIME_TESTS_OPTIMISE_LEVELS::O3;
 
 template <class T>
 T Sqrt(T n) {
@@ -981,11 +1093,11 @@ bool MillerTest(T n, PRIME_TESTS_OPTIMISE_LEVELS optimise_level = PRIME_TESTS_OP
     }
 
     T upper_bound;
-    
+
     switch (optimise_level)
     {
     case PRIME_TESTS_OPTIMISE_LEVELS::O1: {
-        upper_bound = MillerUpperBound_O1(n); 
+        upper_bound = MillerUpperBound_O1(n);
         break;
     }
     default:
@@ -996,7 +1108,7 @@ bool MillerTest(T n, PRIME_TESTS_OPTIMISE_LEVELS optimise_level = PRIME_TESTS_OP
     T base = 2;
 
     while (base <= n) {
-    
+
         if (!IsStrongPseudoprime<T>(n, upper_bound)) {
             return false;
         }
@@ -1012,15 +1124,15 @@ bool MillerTest(T n, PRIME_TESTS_OPTIMISE_LEVELS optimise_level = PRIME_TESTS_OP
 //TODO
 template <class T>
 T NextPrime(T n, PRIME_TESTS_OPTIMISE_LEVELS optimize_level = PRIME_TESTS_OPTIMISE_LEVEL) {
-    
+
     if (n == (T)2) return (T)3;
     if (n < (T)2) return (T)2;
-    
+
     T x = n + 2;
 
     while (!MillerTest(x, optimize_level))
         x += 2;
-    
+
     return x;
 
 }
@@ -1096,16 +1208,16 @@ class Fibonacci : public Sequence<T> {
         }
         T next() {
             iter++;
-    
+
             switch (iter) {
                 case 1: { /*now = start;*/ return start; }
                 case 2: { now = start1; prev = start; return start1; }
             }
-            
+
             T now1 = now + prev;
             prev = now;
             now = now1;
-    
+
             return now;
         }
         Fibonacci<T> renew() {
@@ -1146,15 +1258,315 @@ private:
 //Arithmetic<int> nat = Arithmetic<int>(1, 1);
 
 struct Permutation {
-    Permutation(int x[]) {
-        int n = sizeof(x) / sizeof(int);
+    //Gives identity permutation with length n
+    Permutation(unsigned int length) {
+        len = length;
+        x.resize(len);
+        for (unsigned int i = 0; i < len; i++)
+            x[i] = i;
+    }
+    /*Permutation(int t[]) {
+        int n = sizeof(t) / sizeof(int);
+        for (int i = 0; i < n; i++){
+            x[i] = t[i];
+        }
+    }*/
 
+    Permutation operator *(Permutation b) {
+        if (this->len != b.len)
+            throw "Can't multiply permutations with different lengths.";
+
+        Permutation ans = Permutation(this->len, 0);
+
+        for (unsigned int i = 0; i < this->len; i++)
+            ans.x[i] = b.x[this->x[i]];
+
+        return ans;
+    }
+
+    Permutation Inverse() {
+        Permutation ans = Permutation(this->len, 0);
+        for (unsigned int i = 0; i < this->len; i++)
+        {
+            ans.x[this->x[i]] = i;
+        }
     }
 private:
-    int x[];
+    unsigned int len;
+    std::vector<unsigned int> x;
+    Permutation(unsigned int length, unsigned int value) {
+        len = length;
+        x.assign(length, value);
+    }
 };
 
+template <class T>
 struct Matrix {
 
+    Matrix<T>(const std::vector<std::vector<T>> &arr) {
 
+        mx = arr;
+        rows = mx.size();
+        columns = rows == 0 ? 0 : mx[0].size();
+
+        for (unsigned int i = 1; i < rows; i++)
+            if (mx[i].size() < columns)
+                columns = mx[i].size();
+    
+    }
+
+    Matrix<T>(unsigned int r, unsigned int c, T &value = 0) {
+
+        mx.resize(r);
+        
+        for (unsigned int i = 0; i < r; i++)
+            mx[i].assign(c, value);
+        
+        columns = c;
+        rows = r;
+
+    }
+
+    Matrix<T> operator =(Matrix<T> right) {
+        if (this == &right)
+            return *this;
+        else {
+            this->rows = right.rows();
+            this->columns = right.columns();
+            this->mx = right.mx();
+
+            return *this;
+        }
+    }
+
+    Matrix<T> operator +(Matrix<T> b) {
+
+        if (this->columns != b.columns || this->rows != b.rows)
+            throw "Matrixes sizes don't match (operator +).";
+
+        Matrix<T> ans = Matrix<T>(b.rows, b.columns);
+
+        for (unsigned int i = 0; i < b.rows; i++)
+            for (unsigned int j = 0; j < b.columns; j++)
+                ans.mx[i][j] = this->mx[i][j] + b.mx[i][j];
+
+        return ans;
+
+    }
+
+    Matrix<T> operator -(Matrix<T> b) {
+
+        if (this->columns != b.columns || this->rows != b.rows)
+            throw "Matrixes sizes don't match (operator -).";
+
+        Matrix<T> ans = Matrix<T>(b.rows, b.columns);
+
+        for (unsigned int i = 0; i < b.rows; i++)
+            for (unsigned int j = 0; j < b.columns; j++)
+                ans.mx[i][j] = this->mx[i][j] - b.mx[i][j];
+
+        return ans;
+
+    }
+
+    Matrix<T> operator *(Matrix<T> b) {
+
+        if (this->columns != b.rows)
+            throw "Matrixes sizes don't match (operator *).";
+
+        Matrix<T> ans = Matrix<T>(this->rows, b.columns);
+
+        for (unsigned int i = 0; i < this->rows; i++)
+            for (unsigned int j = 0; j < b.columns; j++) 
+                for (unsigned int k = 0; k < b.rows; k++)
+                    ans.mx[i][j] += this->mx[i][k] * b.mx[k][j];
+
+        return ans;
+
+    }
+
+    Matrix<T> operator *(T b) {
+
+        Matrix<T> ans = Matrix<T>(rows, columns);
+
+        for (unsigned int i = 0; i < rows; i++)
+            for (unsigned int j = 0; j < columns; j++)
+                ans.mx[i][j] = this->mx[i][j] * b;
+
+        return ans;
+
+    }
+
+    static Matrix<T> RandomMatrix(unsigned int columns, unsigned int rows, T(&generator)(void)) {
+
+        Matrix<T> ans = Matrix<T>(rows, columns);
+
+        for (unsigned int i = 0; i < rows; i++)
+            for (unsigned int j = 0; j < columns; j++)
+                ans.mx[i][j] = generator();
+
+        return ans;
+
+    }
+
+    static Matrix<T> Transpose(Matrix<T> a) {
+
+        Matrix<T> ans = Matrix(a.columns, a.rows);
+
+        for (unsigned int i = 0; i < a.rows; i++)
+            for (unsigned int j = 0; j < a.columns; j++)    
+                ans.mx[j][i] = a.mx[i][j];
+
+        return ans;
+
+    }
+
+    static T Determinant(Matrix<T> a) {
+
+        if (a.columns != a.rows)
+            throw "You can't found the determinant of non-square matrix.";
+
+        T ans = (T)0;
+        
+        for (unsigned int i = 0; i < a.columns; i++)
+        {
+            T pre_ans = 1;
+            for (unsigned int j = 0; j < a.rows; j++)
+                pre_ans *= a.mx[j][(i + j) % a.columns];
+            ans += pre_ans;
+        }
+
+        for (unsigned int i = 0; i < a.columns; i++)
+        {
+            T pre_ans = -1;
+            for (unsigned int j = 0; j < a.rows; j++)
+                pre_ans *= a.mx[a.rows - 1 - j][(i + j) % a.columns];
+            ans += pre_ans;
+        }
+
+        return ans;
+
+    }
+
+    void Print() {
+        for (unsigned int i = 0; i < rows; i++){
+            for (unsigned int j = 0; j < columns; j++)
+                std::cout << mx[i][j] << ' ';
+            std::cout << '\n';
+        }
+    }
+
+private:
+    unsigned int rows, columns;
+    std::vector<std::vector<T>> mx;
+
+};
+
+struct Polynomial {
+
+    Polynomial() { degree = 0; }
+
+    Polynomial(std::vector<long double> coefficients) {
+
+        unsigned int index = (unsigned int)coefficients.size(), 
+                     power = 0;
+
+        degree = index - 1;
+
+        while (index != 0) {
+            index--;
+
+            if (coefficients[index] != 0)
+                cfs[power] = coefficients[index];
+
+            power++;
+        }
+
+    }
+
+    Polynomial operator +(Polynomial b) {
+        
+        Polynomial ans = Polynomial();
+        ans.cfs = this->cfs;
+        
+        for (std::pair<unsigned int, long double> each : b.cfs)
+            if (ans.cfs.find(each.first) != ans.cfs.end())
+                ans.cfs[each.first] += each.second;
+            else
+                ans.cfs[each.first] = each.second;
+        
+        
+        ans.degree = this->degree > b.degree ? this->degree : b.degree;
+        
+        return ans;
+
+    }
+
+    Polynomial operator -(Polynomial b) {
+
+        Polynomial ans = Polynomial();
+        ans.cfs = this->cfs;
+        
+        for (std::pair<unsigned int, long double> each : b.cfs)
+            if (ans.cfs.find(each.first) != ans.cfs.end())
+                ans.cfs[each.first] -= each.second;
+            else
+                ans.cfs[each.first] = -each.second;
+        
+        ans.ClearZeroes();
+
+        return ans;
+        //TODO : degree
+    }
+
+    static Polynomial Derivative(Polynomial a) {
+        
+        Polynomial ans = Polynomial();
+        
+        for (std::pair<unsigned int, long double> each : a.cfs)
+            if (each.first != 0)
+                ans.cfs[each.first - 1] = each.second * each.first;
+        
+        
+        return ans;
+
+    }
+
+    static std::vector<long double> Solve(Polynomial a) {
+        //TODO
+    }
+
+    void Print(std::string var) {
+
+        bool first = true;
+        std::string s = "";
+
+        for (auto iter = this->cfs.rbegin(); iter != this->cfs.rend(); ++iter) {
+
+            if (!first && iter->second > 0)
+                s += '+';
+
+            s += std::to_string(iter->second) + var + '^' + std::to_string(iter->first);
+            first = false;
+
+        }
+
+        std::cout << s << '\n';
+
+    }
+
+private:
+
+    std::map<unsigned int, long double> cfs;
+    unsigned int degree;
+
+    void ClearZeroes() {
+
+        for (std::pair<unsigned int, long double> each : this->cfs)
+            if (each.second == 0)
+                this->cfs.erase(this->cfs.find(each.first));
+
+    }
+
+    static const long double SOLVE_PRECISE;
 };

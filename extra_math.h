@@ -195,7 +195,7 @@ struct Complex {
 /// <summary>
 /// An implementation of unsigned long arithmetic.
 /// </summary>
-struct UltraLong {
+class UltraLong {
 
     public:
         /// <summary>
@@ -212,6 +212,10 @@ struct UltraLong {
         /// : The value that initialises UltraLong.
         /// </param>
         UltraLong(unsigned int n) { value[0] = n; }
+        UltraLong(SignedUltraLong x) {
+            for (unsigned int i = 0; i < LENGTH; i++)
+                this->value[i] = x.value[i];
+        }
         /*TODO*/
         /// <summary>
         /// UltraLong constructor.
@@ -837,7 +841,10 @@ struct UltraLong {
             }
             return ans;
         }
-    private:
+
+        friend class SignedUltraLong;
+
+    protected:
 
         static const unsigned int LENGTH = 2;
         static const unsigned int UPPER_BOUND_LENGTH = 2;
@@ -1042,6 +1049,128 @@ bool UltraLong::precalc = false;
 unsigned int UltraLong::rev[4 * UltraLong::UPPER_BOUND_LENGTH];
 Complex UltraLong::wlen_pw[4 * UltraLong::UPPER_BOUND_LENGTH];
 bool UltraLong::lastMultOverflow = false;
+
+class SignedUltraLong : UltraLong {
+    SignedUltraLong(UltraLong x) {
+        for (unsigned int i = 0; i < LENGTH; i++)
+            this->value[i] = x.value[i];
+    }
+    bool operator <(SignedUltraLong right) {
+        if (this->isNegative()) {
+            if (right.isNegative())
+                return (-*this) > (-right);
+            return true;
+        }
+        if (right.isNegative()) {
+            return false;
+        }
+        unsigned int i = LENGTH;
+        while (i != 0) {
+            i--;
+            if (this->value[i] < right.value[i]) return true;
+            if (this->value[i] > right.value[i]) return false;
+        }
+
+        return false;
+    }
+    bool operator >(SignedUltraLong right) {
+        if (this->isNegative()) {
+            if (right.isNegative())
+                return (-*this) < (-right);
+            return false;
+        }
+        if (right.isNegative()) {
+            return true;
+        }
+        unsigned int i = LENGTH;
+        while (i != 0) {
+            i--;
+            if (this->value[i] > right.value[i]) return true;
+            if (this->value[i] < right.value[i]) return false;
+        }
+
+        return false;
+    }
+    bool operator >=(SignedUltraLong right) {
+        if (this->isNegative()) {
+            if (right.isNegative())
+                return (-*this) <= (-right);
+            return false;
+        }
+        if (right.isNegative()) {
+            return true;
+        }
+        unsigned int i = LENGTH;
+        while (i != 0) {
+            i--;
+            if (this->value[i] > right.value[i]) return true;
+            if (this->value[i] < right.value[i]) return false;
+        }
+
+        return true;
+    }
+    bool operator <=(SignedUltraLong right) {
+        if (this->isNegative()) {
+            if (right.isNegative())
+                return (-*this) >= (-right);
+            return true;
+        }
+        if (right.isNegative()) {
+            return false;
+        }
+        unsigned int i = LENGTH;
+        while (i != 0) {
+            i--;
+            if (this->value[i] < right.value[i]) return true;
+            if (this->value[i] > right.value[i]) return false;
+        }
+
+        return true;
+    }
+    SignedUltraLong operator /(unsigned int b) {
+
+        if (this->isNegative()) {
+            return -(-*this / b);
+        }
+
+        UltraLong res = UltraLong();
+
+        unsigned int i = LENGTH;
+        unsigned long long prev = 0;
+
+        while (i != 0) {
+            i--;
+
+            prev += this->value[i];
+
+            res.value[i] = (unsigned int)(prev / b);
+            prev = (prev % b) * UINT_RANGE;
+        }
+
+        return res;
+
+    }
+
+    static SignedUltraLong parse(std::string s) {
+        if (s == "")
+            return SignedUltraLong(0);
+        if (s[0] == '-')
+            return -UltraLong::parse(s.substr(1));
+        return UltraLong::parse(s);
+    }
+
+    std::string toString() {
+        if (this->isNegative())
+            return "-" + UltraLong(-*this).toString();
+    }
+protected:
+    bool isNonnegative() {
+        return this->value[LENGTH - 1] < (UINT_RANGE / 2);
+    }
+    bool isNegative() {
+        return this->value[LENGTH - 1] >= (UINT_RANGE / 2);
+    }
+};
 
 namespace Math {
 

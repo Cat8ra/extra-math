@@ -36,23 +36,23 @@ struct Random {
     }
     char nextChar() {
         step();
-        return now >> 19;
+        return char(now >> 19);
     }
     short nextSInt() {
         step();
-        return now >> 19;
+        return short(now >> 19);
     }
     unsigned short nextUSInt() {
         step();
-        return now >> 19;
+        return unsigned short(now >> 19);
     }
     int nextInt() {
         step();
-        return now >> 19;
+        return int(now >> 19);
     }
     unsigned int nextUInt() {
         step();
-        return now >> 19;
+        return unsigned int(now >> 19);
     }
     long long nextLong() {
         step();
@@ -60,7 +60,7 @@ struct Random {
     }
     unsigned long long nextULong() {
         step();
-        return now;
+        return (unsigned long long)now;
     }
     double nextDouble() {
         step();
@@ -78,8 +78,8 @@ private:
 };
 
 
-const long long Random::b[3] = { 14294630557836824467, 14294630557836824469, 9585689890975426951 };
-const long long Random::a[3] = { 15404481456978043987, 12899375936557105357, 7731693896872981757 };
+const long long Random::b[3] = { (long long)14294630557836824467, (long long)14294630557836824469, (long long)9585689890975426951 };
+const long long Random::a[3] = { (long long)15404481456978043987, (long long)12899375936557105357, (long long)7731693896872981757 };
 
 /// <summary>
 /// An implementation of complex number (using long double).
@@ -191,6 +191,7 @@ struct Complex {
     long double imaginary = 0;
 
 };
+
 //Unsigned ultra long realization
 /// <summary>
 /// An implementation of unsigned long arithmetic.
@@ -212,10 +213,10 @@ class UltraLong {
         /// : The value that initialises UltraLong.
         /// </param>
         UltraLong(unsigned int n) { value[0] = n; }
-        UltraLong(SignedUltraLong x) {
+        /*UltraLong(SignedUltraLong x) {
             for (unsigned int i = 0; i < LENGTH; i++)
                 this->value[i] = x.value[i];
-        }
+        }*/
         /*TODO*/
         /// <summary>
         /// UltraLong constructor.
@@ -1050,10 +1051,39 @@ unsigned int UltraLong::rev[4 * UltraLong::UPPER_BOUND_LENGTH];
 Complex UltraLong::wlen_pw[4 * UltraLong::UPPER_BOUND_LENGTH];
 bool UltraLong::lastMultOverflow = false;
 
-class SignedUltraLong : UltraLong {
+class SignedUltraLong : public UltraLong {
+public:
+    operator UltraLong() 
+    {
+        return SignedUltraLong::abs(*this);
+    }
+    SignedUltraLong() { }
+    SignedUltraLong(unsigned int n) { value[0] = n; }
     SignedUltraLong(UltraLong x) {
         for (unsigned int i = 0; i < LENGTH; i++)
             this->value[i] = x.value[i];
+    }
+    SignedUltraLong(int n) {
+        if (n < 0) {
+            value[0] = (unsigned int)(-n);
+            *this = -*this;
+        }
+        else
+            value[0] = (unsigned int)n;
+    }
+    SignedUltraLong(long long n) {
+        if (n < 0) {
+            value[0] = (-n) % UINT_RANGE;
+            value[1] = (unsigned int)((-n) / UINT_RANGE);
+            *this = -*this;
+        }
+        else
+            value[0] = n % UINT_RANGE;
+        value[1] = (unsigned int)(n / UINT_RANGE);
+    }
+    SignedUltraLong(unsigned long long n) {
+        value[0] = n % UINT_RANGE;
+        value[1] = (unsigned int)(n / UINT_RANGE);
     }
     bool operator <(SignedUltraLong right) {
         if (this->isNegative()) {
@@ -1162,6 +1192,13 @@ class SignedUltraLong : UltraLong {
     std::string toString() {
         if (this->isNegative())
             return "-" + UltraLong(-*this).toString();
+    }
+
+    static UltraLong abs(SignedUltraLong x) {
+        if (x.isNegative()) {
+            return -x;
+        }
+        return x;
     }
 protected:
     bool isNonnegative() {

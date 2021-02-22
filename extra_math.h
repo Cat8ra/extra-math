@@ -7,28 +7,12 @@
 #include <iostream>
 #include <algorithm>
 #include <map>
-
-/*namespace Random {
-    void initialize() { srand((unsigned int)time(NULL)); }
-    char nextChar() { return rand(); }
-    int nextInt() {
-        return rand() + rand() * RAND_MAX + rand() * RAND_MAX * RAND_MAX;
-    }
-    unsigned int nextUint() {
-        return (unsigned int)nextInt();
-    }
-    unsigned long long nextLong() {
-        return nextInt() * 4294967296 + nextInt();
-    }
-    unsigned long long next_ulong() {
-        return (unsigned long long)nextLong();
-    }
-};*/
+#include <unordered_set>
+#include <unordered_map>
 
 struct Random {
     Random(long long seed = 0) {
         now = seed;
-        first = true;
     }
     bool nextBool() {
         step();
@@ -36,35 +20,33 @@ struct Random {
     }
     char nextChar() {
         step();
-        return char(now >> 19);
+        return now >> 19;
     }
     short nextSInt() {
         step();
-        return short(now >> 19);
+        return now >> 19;
     }
     unsigned short nextUSInt() {
         step();
-        return unsigned short(now >> 19);
+        return now >> 19;
     }
     int nextInt() {
         step();
-        return int(now >> 19);
+        return now >> 19;
     }
     unsigned int nextUInt() {
         step();
-        return unsigned int(now >> 19);
+        return now >> 19;
     }
     long long nextLong() {
-        step();
-        return now;
+        return nextInt() * (1ll << 32) + nextInt();
     }
     unsigned long long nextULong() {
-        step();
-        return (unsigned long long)now;
+        return nextInt() * (1ll << 32) + nextInt();
     }
     double nextDouble() {
-        step();
-        return *(double*)(&now);
+        long long n = nextInt() * (1ll << 32) + nextInt();
+        return *(double*)(&n);
     }
 
 private:
@@ -74,12 +56,9 @@ private:
     static const long long a[3];
     static const long long b[3];
     long long now;
-    bool first;
 };
-
-
-const long long Random::b[3] = { (long long)14294630557836824467, (long long)14294630557836824469, (long long)9585689890975426951 };
-const long long Random::a[3] = { (long long)15404481456978043987, (long long)12899375936557105357, (long long)7731693896872981757 };
+const long long Random::b[3] = { 14294630557836824467, 14294630557836824469, 9585689890975426951 };
+const long long Random::a[3] = { 15404481456978043987, 12899375936557105357, 7731693896872981757 };
 
 /// <summary>
 /// An implementation of complex number (using long double).
@@ -196,7 +175,7 @@ struct Complex {
 /// <summary>
 /// An implementation of unsigned long arithmetic.
 /// </summary>
-class UltraLong {
+class UnsignedUltraLong {
 
     public:
         /// <summary>
@@ -205,14 +184,14 @@ class UltraLong {
         /// <returns>
         /// Zero.
         /// </returns>
-        UltraLong() { }
+        UnsignedUltraLong() { }
         /// <summary>
         /// UltraLong constructor.
         /// </summary>
         /// <param name = "n">
         /// : The value that initialises UltraLong.
         /// </param>
-        UltraLong(unsigned int n) { value[0] = n; }
+        UnsignedUltraLong(unsigned int n) { value[0] = n; }
         /*UltraLong(SignedUltraLong x) {
             for (unsigned int i = 0; i < LENGTH; i++)
                 this->value[i] = x.value[i];
@@ -225,7 +204,7 @@ class UltraLong {
         /// : The value that initialises UltraLong. If it is less than zero then
         /// UltraLong will be equal ~n + 1, so n + (-n) = 0.
         /// </param>
-        UltraLong(int n) {
+        UnsignedUltraLong(int n) {
             if (n < 0) {
                 value[0] = (unsigned int)(-n);
                 *this = -*this;
@@ -233,7 +212,7 @@ class UltraLong {
             else
                 value[0] = (unsigned int)n;
         }
-        UltraLong(long long n) {
+        UnsignedUltraLong(long long n) {
             if (n < 0) {
                 value[0] = (-n) % UINT_RANGE;
                 value[1] = (unsigned int)((-n) / UINT_RANGE);
@@ -250,12 +229,12 @@ class UltraLong {
         /// <param name = "n">
         /// : The value that initialises UltraLong.
         /// </param>
-        UltraLong(unsigned long long n) {
+        UnsignedUltraLong(unsigned long long n) {
             value[0] = n % UINT_RANGE;
             value[1] = (unsigned int)(n / UINT_RANGE);
         }
 
-        bool operator ==(UltraLong right) {
+        bool operator ==(UnsignedUltraLong right) {
             if (this == &right)
                 return true;
             else {
@@ -265,7 +244,7 @@ class UltraLong {
                 return true;
             }
         }
-        bool operator !=(UltraLong right) {
+        bool operator !=(UnsignedUltraLong right) {
             if (this == &right)
                 return false;
             else {
@@ -275,7 +254,7 @@ class UltraLong {
                 return false;
             }
         }
-        bool operator <(UltraLong right) {
+        bool operator <(UnsignedUltraLong right) {
             unsigned int i = LENGTH;
             while (i != 0) {
                 i--;
@@ -285,7 +264,7 @@ class UltraLong {
 
             return false;
         }
-        bool operator >(UltraLong right){
+        bool operator >(UnsignedUltraLong right){
             unsigned int i = LENGTH;
             while (i != 0) {
                 i--;
@@ -295,7 +274,7 @@ class UltraLong {
 
             return false;
         }
-        bool operator >=(UltraLong right) {
+        bool operator >=(UnsignedUltraLong right) {
             unsigned int i = LENGTH;
             while (i != 0) {
                 i--;
@@ -305,7 +284,7 @@ class UltraLong {
 
             return true;
         }
-        bool operator <=(UltraLong right) {
+        bool operator <=(UnsignedUltraLong right) {
             unsigned int i = LENGTH;
             while (i != 0) {
                 i--;
@@ -316,7 +295,7 @@ class UltraLong {
             return true;
         }
 
-        UltraLong operator =(UltraLong right) {
+        UnsignedUltraLong operator =(UnsignedUltraLong right) {
             if (this == &right)
                 return *this;
             else {
@@ -327,9 +306,9 @@ class UltraLong {
             }
         }
 
-        UltraLong operator -() {
+        UnsignedUltraLong operator -() {
 
-            UltraLong Res = *this;
+            UnsignedUltraLong Res = *this;
 
             for (unsigned int i = 0; i < LENGTH; i++)
                 Res.value[i] = ~Res.value[i];
@@ -339,10 +318,10 @@ class UltraLong {
             return Res;
 
         }
-        UltraLong operator +() {
+        UnsignedUltraLong operator +() {
             return *this;
         }
-        UltraLong operator ++(int) {
+        UnsignedUltraLong operator ++(int) {
 
             this->value[0]++;
 
@@ -358,9 +337,9 @@ class UltraLong {
 
         }
 
-        UltraLong operator +(UltraLong b) {
+        UnsignedUltraLong operator +(UnsignedUltraLong b) {
 
-            UltraLong Res = UltraLong();
+            UnsignedUltraLong Res = UnsignedUltraLong();
 
             unsigned int Overflow = 0;
 
@@ -377,9 +356,9 @@ class UltraLong {
             return Res;
 
         }
-        UltraLong operator -(UltraLong b) {
+        UnsignedUltraLong operator -(UnsignedUltraLong b) {
 
-            UltraLong res = UltraLong();
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             unsigned int overflow = 0;
 
@@ -399,9 +378,9 @@ class UltraLong {
 
         }
 
-        UltraLong operator *(unsigned int b) {
+        UnsignedUltraLong operator *(unsigned int b) {
 
-            UltraLong res = UltraLong();
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             unsigned long long overflow = 0,
                                overflow1 = 0;
@@ -422,9 +401,9 @@ class UltraLong {
             return res;
 
         }
-        UltraLong operator /(unsigned int b) {
+        UnsignedUltraLong operator /(unsigned int b) {
             
-            UltraLong res = UltraLong();
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             unsigned int i = LENGTH;
             unsigned long long prev = 0;
@@ -494,7 +473,7 @@ class UltraLong {
             UltraLong Res = ac.SuperLeftShift(2 * RightNumberLength) + adbc.SuperLeftShift(RightNumberLength) + bd;
             return Res;
         }*/
-        UltraLong operator *(UltraLong b) {
+        UnsignedUltraLong operator *(UnsignedUltraLong b) {
 
             /*if (*this == UltraLong::Zero || b == UltraLong::Zero) {
                 return UltraLong();
@@ -503,7 +482,7 @@ class UltraLong {
 
             lastMultOverflow = false;
 
-            UltraLong res = UltraLong();
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             unsigned long long temp1[4 * LENGTH] = { 0 },
                                temp2[4 * LENGTH] = { 0 },
@@ -542,7 +521,7 @@ class UltraLong {
             return res;
 
         }
-        UltraLong operator /(UltraLong b) {
+        UnsignedUltraLong operator /(UnsignedUltraLong b) {
 
             if (b == Zero) { throw "UltraLong division by zero."; }
             if (b == One) { return *this; }
@@ -551,12 +530,12 @@ class UltraLong {
 
             std::pair<unsigned int, unsigned int> lead_b = lead(b);
 
-            UltraLong l = (*this / (lead_b.first + 1)).superRightShift(lead_b.second);
-            UltraLong r = *this;
+            UnsignedUltraLong l = (*this / (lead_b.first + 1)).superRightShift(lead_b.second);
+            UnsignedUltraLong r = *this;
 
             while (r - l > 1)
             {
-                UltraLong m = UltraLong::middle(l, r);
+                UnsignedUltraLong m = UnsignedUltraLong::middle(l, r);
 
                 if (m * b > *this || lastMultOverflow) {
                     r = m;
@@ -585,36 +564,36 @@ class UltraLong {
             return (unsigned int)prev;
 
         }
-        UltraLong operator %(UltraLong b) {
+        UnsignedUltraLong operator %(UnsignedUltraLong b) {
             return *this - *this / b * b;
         }
 
-        UltraLong operator ^(UltraLong b) {
-            UltraLong res = UltraLong();
+        UnsignedUltraLong operator ^(UnsignedUltraLong b) {
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             for (unsigned int i = 0; i < LENGTH; i++)
                 res.value[i] = this->value[i] ^ b.value[i];
 
             return res;
         }
-        UltraLong operator &(UltraLong b) {
-            UltraLong res = UltraLong();
+        UnsignedUltraLong operator &(UnsignedUltraLong b) {
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             for (unsigned int i = 0; i < LENGTH; i++)
                 res.value[i] = this->value[i] & b.value[i];
 
             return res;
         }
-        UltraLong operator |(UltraLong b) {
-            UltraLong res = UltraLong();
+        UnsignedUltraLong operator |(UnsignedUltraLong b) {
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             for (unsigned int i = 0; i < LENGTH; i++)
                 res.value[i] = this->value[i] | b.value[i];
 
             return res;
         }
-        UltraLong operator ~() {
-            UltraLong res = UltraLong();
+        UnsignedUltraLong operator ~() {
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             for (unsigned int i = 0; i < LENGTH; i++)
                 res.value[i] = ~this->value[i];
@@ -622,51 +601,51 @@ class UltraLong {
             return res;
         }
 
-        UltraLong operator +=(UltraLong right) {
+        UnsignedUltraLong operator +=(UnsignedUltraLong right) {
             *this = *this + right;
             return *this;
         }
-        UltraLong operator -=(UltraLong right) {
+        UnsignedUltraLong operator -=(UnsignedUltraLong right) {
             *this = *this - right;
             return *this;
         }
 
-        UltraLong operator *=(UltraLong right) {
+        UnsignedUltraLong operator *=(UnsignedUltraLong right) {
             *this = *this * right;
             return *this;
         }
-        UltraLong operator *=(unsigned int right) {
+        UnsignedUltraLong operator *=(unsigned int right) {
             *this = *this * right;
             return *this;
         }
-        UltraLong operator /=(UltraLong right) {
+        UnsignedUltraLong operator /=(UnsignedUltraLong right) {
             *this = *this / right;
             return *this;
         }
 
-        UltraLong operator %=(UltraLong right) {
+        UnsignedUltraLong operator %=(UnsignedUltraLong right) {
             *this = *this % right;
             return *this;
         }
 
-        UltraLong operator ^=(UltraLong right) {
+        UnsignedUltraLong operator ^=(UnsignedUltraLong right) {
             *this = *this ^ right;
             return *this;
         }
-        UltraLong operator &=(UltraLong right) {
+        UnsignedUltraLong operator &=(UnsignedUltraLong right) {
             *this = *this & right;
             return *this;
         }
-        UltraLong operator |=(UltraLong right) {
+        UnsignedUltraLong operator |=(UnsignedUltraLong right) {
             *this = *this | right;
             return *this;
         } 
 
-        UltraLong operator >>(unsigned long long right) {
+        UnsignedUltraLong operator >>(unsigned long long right) {
 
             unsigned long long n = right;
 
-            UltraLong res = *this;
+            UnsignedUltraLong res = *this;
             res = res.superRightShift((unsigned int)(n / BITS_IN_UINT));
 
             n %= BITS_IN_UINT;
@@ -682,11 +661,11 @@ class UltraLong {
             return res;
 
         }
-        UltraLong operator <<(unsigned long long right) {
+        UnsignedUltraLong operator <<(unsigned long long right) {
 
             unsigned long long n = right;
 
-            UltraLong res = *this;
+            UnsignedUltraLong res = *this;
             res = res.superLeftShift((unsigned int)(n / BITS_IN_UINT));
 
             n %= BITS_IN_UINT;
@@ -713,7 +692,7 @@ class UltraLong {
         /// Modular exponentiation.
         /// </summary>
         /// <returns>The remainder after dividing a to b-th power by mod</returns>
-        static UltraLong modPow(UltraLong a, UltraLong b, UltraLong mod) {
+        static UnsignedUltraLong modPow(UnsignedUltraLong a, UnsignedUltraLong b, UnsignedUltraLong mod) {
             if (mod == 0) { throw "UltraLong modulo by zero."; }
             if (mod == One) {
                 return Zero;
@@ -767,7 +746,7 @@ class UltraLong {
 
             std::string s = "";
 
-            UltraLong n = *this;
+            UnsignedUltraLong n = *this;
 
             while (n > 0)
             {
@@ -790,11 +769,11 @@ class UltraLong {
 
         }
 
-        static long double divide(UltraLong a, UltraLong b) {
+        static long double divide(UnsignedUltraLong a, UnsignedUltraLong b) {
             return a.toLongDouble() / b.toLongDouble();
         }
 
-        static long double log(UltraLong n) {
+        static long double log(UnsignedUltraLong n) {
             if (n == 0) {
                 throw "Logarithm of zero is minus infinity.";
             }
@@ -811,15 +790,15 @@ class UltraLong {
             return ans * 2;
         }
 
-        static UltraLong sqrt(UltraLong n) {
+        static UnsignedUltraLong sqrt(UnsignedUltraLong n) {
 
             if (n < 2) return n;
 
-            UltraLong l = 0, r = n;
+            UnsignedUltraLong l = 0, r = n;
 
             while (r - l > 1) {
 
-                UltraLong m = (l + r) / 2;
+                UnsignedUltraLong m = (l + r) / 2;
 
                 if (m * m > n)
                     r = m;
@@ -832,8 +811,8 @@ class UltraLong {
 
         }
 
-        static UltraLong parse(std::string s) {
-            UltraLong ans = UltraLong();
+        static UnsignedUltraLong parse(std::string s) {
+            UnsignedUltraLong ans = UnsignedUltraLong();
             unsigned long long size = s.size();
             for (unsigned long long i = 0; i < size; i++)
             {
@@ -843,7 +822,7 @@ class UltraLong {
             return ans;
         }
 
-        friend class SignedUltraLong;
+        friend class UltraLong;
 
     protected:
 
@@ -862,20 +841,20 @@ class UltraLong {
 
         unsigned int value[LENGTH] = { 0 };
 
-        static UltraLong One;
-        static UltraLong Zero;
-        static UltraLong MinusOne;
+        static UnsignedUltraLong One;
+        static UnsignedUltraLong Zero;
+        static UnsignedUltraLong MinusOne;
 
         static unsigned int rev[4 * UPPER_BOUND_LENGTH];
         static Complex wlen_pw[4 * UPPER_BOUND_LENGTH];
 
         static bool lastMultOverflow;
 
-        static UltraLong middle(UltraLong a, UltraLong b) {
+        static UnsignedUltraLong middle(UnsignedUltraLong a, UnsignedUltraLong b) {
             return a + (b - a) / 2;
         }
 
-        static std::pair<unsigned int, unsigned int> lead(UltraLong a) {
+        static std::pair<unsigned int, unsigned int> lead(UnsignedUltraLong a) {
             unsigned int i = LENGTH;
             while (i != 0) {
                 i--;
@@ -994,11 +973,11 @@ class UltraLong {
                     a[i] /= n;
         }
 
-        UltraLong superLeftShift(unsigned int n) {
+        UnsignedUltraLong superLeftShift(unsigned int n) {
             if (n > LENGTH - 1)
                 return 0;
 
-            UltraLong res = UltraLong();
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             unsigned int i = LENGTH - n;
             while (i != 0) {
@@ -1009,9 +988,9 @@ class UltraLong {
             return res;
 
         }
-        UltraLong superRightShift(unsigned int n) {
+        UnsignedUltraLong superRightShift(unsigned int n) {
 
-            UltraLong res = UltraLong();
+            UnsignedUltraLong res = UnsignedUltraLong();
 
             for (unsigned int i = 0; i < LENGTH - n; i++)
                 res.value[i] = this->value[i + n];
@@ -1022,9 +1001,9 @@ class UltraLong {
             return res;
 
         }
-        UltraLong rightShift(unsigned long long n) {
+        UnsignedUltraLong rightShift(unsigned long long n) {
 
-            UltraLong res = *this;
+            UnsignedUltraLong res = *this;
             res.superRightShift((unsigned int)(n / BITS_IN_UINT));
 
             n %= BITS_IN_UINT;
@@ -1042,28 +1021,28 @@ class UltraLong {
         }
 };
 
-UltraLong UltraLong::One = UltraLong(1);
-UltraLong UltraLong::Zero = UltraLong(0);
-UltraLong UltraLong::MinusOne = UltraLong(-1);
-long double UltraLong::PI = 3.1415926535897932389l;
-bool UltraLong::precalc = false;
-unsigned int UltraLong::rev[4 * UltraLong::UPPER_BOUND_LENGTH];
-Complex UltraLong::wlen_pw[4 * UltraLong::UPPER_BOUND_LENGTH];
-bool UltraLong::lastMultOverflow = false;
+UnsignedUltraLong UnsignedUltraLong::One = UnsignedUltraLong(1);
+UnsignedUltraLong UnsignedUltraLong::Zero = UnsignedUltraLong(0);
+UnsignedUltraLong UnsignedUltraLong::MinusOne = UnsignedUltraLong(-1);
+long double UnsignedUltraLong::PI = 3.1415926535897932389l;
+bool UnsignedUltraLong::precalc = false;
+unsigned int UnsignedUltraLong::rev[4 * UnsignedUltraLong::UPPER_BOUND_LENGTH];
+Complex UnsignedUltraLong::wlen_pw[4 * UnsignedUltraLong::UPPER_BOUND_LENGTH];
+bool UnsignedUltraLong::lastMultOverflow = false;
 
-class SignedUltraLong : public UltraLong {
+class UltraLong : public UnsignedUltraLong {
 public:
-    operator UltraLong() 
+    operator UnsignedUltraLong() 
     {
-        return SignedUltraLong::abs(*this);
+        return UltraLong::abs(*this);
     }
-    SignedUltraLong() { }
-    SignedUltraLong(unsigned int n) { value[0] = n; }
-    SignedUltraLong(UltraLong x) {
+    UltraLong() { }
+    UltraLong(unsigned int n) { value[0] = n; }
+    UltraLong(UnsignedUltraLong x) {
         for (unsigned int i = 0; i < LENGTH; i++)
             this->value[i] = x.value[i];
     }
-    SignedUltraLong(int n) {
+    UltraLong(int n) {
         if (n < 0) {
             value[0] = (unsigned int)(-n);
             *this = -*this;
@@ -1071,7 +1050,7 @@ public:
         else
             value[0] = (unsigned int)n;
     }
-    SignedUltraLong(long long n) {
+    UltraLong(long long n) {
         if (n < 0) {
             value[0] = (-n) % UINT_RANGE;
             value[1] = (unsigned int)((-n) / UINT_RANGE);
@@ -1081,11 +1060,11 @@ public:
             value[0] = n % UINT_RANGE;
         value[1] = (unsigned int)(n / UINT_RANGE);
     }
-    SignedUltraLong(unsigned long long n) {
+    UltraLong(unsigned long long n) {
         value[0] = n % UINT_RANGE;
         value[1] = (unsigned int)(n / UINT_RANGE);
     }
-    bool operator <(SignedUltraLong right) {
+    bool operator <(UltraLong right) {
         if (this->isNegative()) {
             if (right.isNegative())
                 return (-*this) > (-right);
@@ -1103,7 +1082,7 @@ public:
 
         return false;
     }
-    bool operator >(SignedUltraLong right) {
+    bool operator >(UltraLong right) {
         if (this->isNegative()) {
             if (right.isNegative())
                 return (-*this) < (-right);
@@ -1121,7 +1100,7 @@ public:
 
         return false;
     }
-    bool operator >=(SignedUltraLong right) {
+    bool operator >=(UltraLong right) {
         if (this->isNegative()) {
             if (right.isNegative())
                 return (-*this) <= (-right);
@@ -1139,7 +1118,7 @@ public:
 
         return true;
     }
-    bool operator <=(SignedUltraLong right) {
+    bool operator <=(UltraLong right) {
         if (this->isNegative()) {
             if (right.isNegative())
                 return (-*this) >= (-right);
@@ -1157,13 +1136,13 @@ public:
 
         return true;
     }
-    SignedUltraLong operator /(unsigned int b) {
+    UltraLong operator /(unsigned int b) {
 
         if (this->isNegative()) {
             return -(-*this / b);
         }
 
-        UltraLong res = UltraLong();
+        UnsignedUltraLong res = UnsignedUltraLong();
 
         unsigned int i = LENGTH;
         unsigned long long prev = 0;
@@ -1181,20 +1160,21 @@ public:
 
     }
 
-    static SignedUltraLong parse(std::string s) {
+    static UltraLong parse(std::string s) {
         if (s == "")
-            return SignedUltraLong(0);
+            return UltraLong(0);
         if (s[0] == '-')
-            return -UltraLong::parse(s.substr(1));
-        return UltraLong::parse(s);
+            return -UnsignedUltraLong::parse(s.substr(1));
+        return UnsignedUltraLong::parse(s);
     }
 
     std::string toString() {
         if (this->isNegative())
-            return "-" + UltraLong(-*this).toString();
+            return "-" + UnsignedUltraLong(-*this).toString();
+        return UnsignedUltraLong(*this).toString();
     }
 
-    static UltraLong abs(SignedUltraLong x) {
+    static UnsignedUltraLong abs(UltraLong x) {
         if (x.isNegative()) {
             return -x;
         }
@@ -1220,8 +1200,8 @@ namespace Math {
     }
 
     template <>
-    UltraLong sqrt(UltraLong n) {
-        return UltraLong::sqrt(n);
+    UnsignedUltraLong sqrt(UnsignedUltraLong n) {
+        return UnsignedUltraLong::sqrt(n);
     }
 
     template <class T>
@@ -1230,8 +1210,8 @@ namespace Math {
     }
 
     template <>
-    UltraLong MillerUpperBound_O1<UltraLong>(UltraLong n) {
-        return (unsigned long long)floorl(2 * powl(UltraLong::log(n), 2));
+    UnsignedUltraLong MillerUpperBound_O1<UnsignedUltraLong>(UnsignedUltraLong n) {
+        return (unsigned long long)floorl(2 * powl(UnsignedUltraLong::log(n), 2));
     }
 
     template <class T>
@@ -1241,8 +1221,8 @@ namespace Math {
     }
 
     template <>
-    UltraLong MillerUpperBound_O2<UltraLong>(UltraLong n) {
-        long double ans = UltraLong::log(n);
+    UnsignedUltraLong MillerUpperBound_O2<UnsignedUltraLong>(UnsignedUltraLong n) {
+        long double ans = UnsignedUltraLong::log(n);
         return (unsigned long long)floorl(ans * logl(ans) / logl(2));
     }
 
@@ -1261,8 +1241,8 @@ namespace Math {
     }
 
     template <>
-    UltraLong ModPow<UltraLong>(UltraLong a, UltraLong b, UltraLong mod) {
-        return UltraLong::modPow(a, b, mod);
+    UnsignedUltraLong ModPow<UnsignedUltraLong>(UnsignedUltraLong a, UnsignedUltraLong b, UnsignedUltraLong mod) {
+        return UnsignedUltraLong::modPow(a, b, mod);
     }
 
     template <class T>
@@ -1362,6 +1342,9 @@ namespace Math {
 
     }
 
+    /*template <class T>
+    T PrimeTest() {}*/
+
     //TODO
     template <class T>
     T nextPrime(T n, PRIME_TESTS_OPTIMISE_LEVELS optimize_level = PRIME_TESTS_OPTIMISE_LEVEL) {
@@ -1371,7 +1354,7 @@ namespace Math {
 
         T x = n + 2;
 
-        while (!MillerTest(x, optimize_level))
+        while (!PrimeTest(x, optimize_level))
             x += 2;
 
         return x;
@@ -1559,13 +1542,25 @@ struct Matrix {
     
     }
 
-    Matrix<T>(unsigned int r, unsigned int c, T &value = 0) {
+    Matrix<T>(unsigned int r, unsigned int c, T &value) {
 
         mx.resize(r);
         
         for (unsigned int i = 0; i < r; i++)
             mx[i].assign(c, value);
         
+        columns = c;
+        rows = r;
+
+    }
+
+    Matrix<T>(unsigned int r, unsigned int c) {
+
+        mx.resize(r);
+
+        for (unsigned int i = 0; i < r; i++)
+            mx[i].assign(c, (T)0);
+
         columns = c;
         rows = r;
 
@@ -1641,7 +1636,7 @@ struct Matrix {
 
     }
 
-    static Matrix<T> randomMatrix(unsigned int columns, unsigned int rows, T(&generator)(void)) {
+    static Matrix<T> randomMatrix(unsigned int columns, unsigned int rows, T generator(void)) {
 
         Matrix<T> ans = Matrix<T>(rows, columns);
 
@@ -1665,7 +1660,7 @@ struct Matrix {
 
     }
 
-    static T determinant(Matrix<T> a) {
+    /*static T determinant(Matrix<T> a) {
 
         if (a.columns != a.rows)
             throw "You can't found the determinant of non-square matrix.";
@@ -1690,7 +1685,7 @@ struct Matrix {
 
         return ans;
 
-    }
+    }*/
 
     void print() {
         for (unsigned int i = 0; i < rows; i++){
@@ -1700,7 +1695,7 @@ struct Matrix {
         }
     }
 
-    Matrix<T> complementaryMinor() {}
+    //Matrix<T> complementaryMinor() {}
 
 private:
     unsigned int rows, columns;
@@ -1857,7 +1852,7 @@ public:
         }    
     }
 
-    void Print(std::string var) {
+    /*void Print(std::string var) {
 
         bool first = true;
         std::string s = "";
@@ -1874,11 +1869,11 @@ public:
 
         std::cout << s << '\n';
 
-    }
+    }*/
 
 private:
 
-    std::map<unsigned int, long double> cfs;
+    std::unordered_map<unsigned int, long double> cfs;
     unsigned int degree;
 
     void ClearZeroes() {
@@ -1963,3 +1958,244 @@ private:
 
 long double Polynomial::SOLVE_PRECISE = 1e-13;
 long double Polynomial::MAX_ROOT = 1e300;
+
+class Graph {
+public:
+    Graph() {
+        vertex = 0;
+    }
+    Graph(unsigned int vertex) {
+        this->vertex = vertex;
+        edges.resize(vertex);
+    }
+    inline void addEdge(unsigned int first, unsigned int second) {
+        edges[first].insert(second);
+        edges[second].insert(first);
+    }
+    std::unordered_set<unsigned int> neighbours(unsigned int index) {
+        return edges[index];
+    }
+    Graph(unsigned int vertex, std::vector<std::pair<unsigned int, unsigned int>> &edges) {
+        this->vertex = vertex;
+        edges.resize(vertex);
+        for (std::pair<unsigned int, unsigned int>& edge : edges) {
+            this->addEdge(edge.first, edge.second);
+        }
+    }
+    bool isTree() {
+        color.assign(vertex, 0);
+        bool ans = !isTreeDFS(0, -1);
+        for (unsigned int i = 0; i < vertex; i++) {
+            if (color[i] != 0)
+                return false;
+        }
+        return ans;
+    }
+protected:
+    unsigned int vertex;
+    std::vector<std::unordered_set<unsigned int>> edges;
+    bool isTreeDFS(unsigned int v, unsigned int p) {
+        color[v] = 1;
+        for (unsigned int n : edges[v])
+        {
+            switch (color[n])
+            {
+            case 0: {
+                if (isTreeDFS(n, v))
+                    return true;
+                break;
+            }
+            case 1: {
+                return true;
+                break;
+            }
+            default:
+                break;
+            }         
+        }
+        color[v] = 2;
+        return false;
+    }
+    std::vector<unsigned int> color;
+};
+
+struct Vector3D {
+public:
+    Vector3D() {
+        x = y = z = 0;
+    }
+    Vector3D(long double x, long double y, long double z) {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
+    long double abs() {
+        return sqrtl(x * x + y * y + z * z);
+    }
+    Vector3D operator +(Vector3D b) {
+        return Vector3D(this->x + b.x, this->y + b.y, this->z + b.z);
+    }
+    Vector3D operator -(Vector3D b) {
+        return Vector3D(this->x - b.x, this->y - b.y, this->z - b.z);
+    }
+    long double dot(Vector3D b) {
+        return this->x * b.x + this->y * b.y + this->z * b.z;
+    }
+    Vector3D operator * (long double b) {
+        return Vector3D(this->x * b, this->y * b, this->z * b);
+    }
+    Vector3D operator * (Vector3D b) {
+        return Vector3D(this->y * b.z - this->z * b.y, this->z * b.x - this->x * b.z, this->x * b.y - this->y * b.x);
+    }
+private:
+    long double x, y, z;
+};
+
+struct Parser {
+public:
+    Parser() {}
+    long double parse(std::string s, unsigned int shift = 0) {
+        code = 0;
+        error = "";
+        error_index = shift + 0;
+
+        if (s.length() == 0) {
+            code = 1;
+            //TODO: error
+            return 0xDEADBEEF;
+        }
+
+        const enum class SYMBOL {NONE, NUMBER, OPERATOR, BRACKETS};
+        const std::unordered_map<char, SYMBOL> sym = { {'*', SYMBOL::OPERATOR},
+              {'/', SYMBOL::OPERATOR}, {'^', SYMBOL::OPERATOR}, 
+              {'(', SYMBOL::BRACKETS}, {')', SYMBOL::BRACKETS} };
+
+        const std::unordered_map<char, long double> OPERATOR_CODES = {
+              {'+', 0}, {'-', 1}, {'*', 2}, {'/', 3}, {'^', 4} };
+        const char OPERATORS[] = {'+', '-', '*', '/', '^'};
+        
+        unsigned int index = 0, balance = 0;
+        
+        SYMBOL last = SYMBOL::NONE;
+        
+        unsigned int start_ = 0, end_ = 0;
+        
+        std::vector<std::pair<SYMBOL, long double>> parsed;
+
+        while (index < s.length()) {
+            SYMBOL new_;
+            if (sym.find(s[index]) != sym.end())
+                new_ = sym.at(s[index]);
+            else if ('0' <= s[index] && s[index] <= '9' || s[index] == '.') {
+                new_ = SYMBOL::NUMBER;
+            }
+            else if (s[index] == '+' || s[index] == '-') {
+                if (last == SYMBOL::NUMBER)
+                    new_ = SYMBOL::OPERATOR;
+                else
+                    new_ = SYMBOL::NUMBER;
+            }
+            else {
+                code = 2;
+                error_index = shift + index;
+                //TODO: error
+                return 0xDEADBEEF;
+            }
+            if (balance > 0) {
+                new_ = SYMBOL::BRACKETS;
+            }
+            if (s[index] == '(')
+                balance++;
+            if (s[index] == ')')
+                balance--;
+            if (balance < 0) {
+                code = 2;
+                error_index = shift + index;
+                //TODO: error
+                return 0xDEADBEEF;
+            }
+            if (new_ == last || last == SYMBOL::NONE)
+                end_++;
+            else {
+                switch(last) {
+                    case (SYMBOL::NUMBER): {
+                        long double x;
+                        try
+                        {
+                            x = std::stold(s.substr(start_, end_ - start_ + 1));
+                        }
+                        catch (const std::exception&)
+                        {
+                            code = 3;
+                            error_index = shift + index;
+                            //TODO: error
+                            return 0xDEADBEEF;
+                        }
+                        parsed.push_back({ SYMBOL::NUMBER, x });
+                        break;
+                    }
+                    case (SYMBOL::OPERATOR): {
+                        parsed.push_back({ SYMBOL::OPERATOR, OPERATOR_CODES.at(s[index]) });
+                        break;
+                    }
+                    case (SYMBOL::BRACKETS): {
+                        long double x = this->parse(s.substr(start_ + 1, end_ - start_), shift + index);
+                        if (code != 0) {
+                            return 0xDEADBEEF;
+                        }
+                        parsed.push_back({ SYMBOL::NUMBER, x });
+                        break;
+                    }
+                    default: {
+                        break; 
+                    }
+                }
+            }
+            index++;
+        }
+
+        /*while (parsed.size() > 1) {
+            for (int i = 0; i < parsed.size(); i++) {
+                if ()
+            }
+        }*/
+
+        if (code != 0) {
+            generate_error_message();
+            return 0xDEADBEEF;
+        }
+
+        /*while (true)
+        for (int i = parsed.size() - 1; i >= 0; i--) {
+            if (parsed[i].first == SYMBOL::OPERATOR) {
+                if ()
+            }
+        }*/
+
+    }
+    std::string getError() {
+        return error;
+    }
+private:
+    static int code;
+    static unsigned int error_index;
+    static std::string error;
+    static void generate_error_message() {
+        std::unordered_map<int, std::string> error_codes = {
+            {0, "OK"}, {1, "Empty block"},
+            {2, "Unknown symbol"}, {3, "Brackets mismatch"},
+            {4, "Error while reading number"} };
+        error = error_codes.at(code) + ", index = " + std::to_string(error_index);
+    }
+    
+};
+int Parser::code = 0;
+unsigned int Parser::error_index = 0;
+std::string Parser::error = "";
+
+/*class MultiGraph : public Graph {
+
+protected:
+    unsigned int vertex;
+    std::vector<std::unordered_multiset<unsigned int>> edges;
+};*/

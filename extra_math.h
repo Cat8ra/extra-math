@@ -1714,14 +1714,15 @@ public:
         unsigned int index = (unsigned int)coefficients.size(), 
                      power = 0;
 
-        degree = index - 1;
+        degree = 0;
 
         while (index != 0) {
             index--;
 
-            if (coefficients[index] != 0)
+            if (coefficients[index] != 0) {
                 cfs[power] = coefficients[index];
-
+                degree = power;
+            }
             power++;
         }
 
@@ -1814,7 +1815,7 @@ public:
 
         case 0: {
             Solutions ans = Solutions();
-            ans.SetAnyNumber(true);
+            ans.SetAnyNumber(a.cfs.size() == 0);
             return ans;
         }
 
@@ -1884,7 +1885,7 @@ private:
 
     static Solutions SolveLinear(Polynomial a) {
         Solutions ans = Solutions();
-        ans.Add(-a.cfs[1]/a.cfs[0]);
+        ans.Add(-a.cfs[0]/a.cfs[1]);
         return ans;
     }
 
@@ -1957,7 +1958,7 @@ private:
 };
 
 long double Polynomial::SOLVE_PRECISE = 1e-13;
-long double Polynomial::MAX_ROOT = 1e300;
+long double Polynomial::MAX_ROOT = 1e30;
 
 class Graph {
 public:

@@ -4,7 +4,7 @@ Some math that is not in standard library, for example, long arithmetic, a bit f
 # Documentation
 ## UltraLong
 ### Description
-`UltraLong` is a big unsigned number. Before use you should change settings (else it'll be your fault). `UltraLong` assumes that size of `unsigned int` is 32 bits and size of `unsigned long long` is 64 bits. If it's not true then `UltraLong` may make errors in calculations. If so, you can always open an issue with size of `unsigned int` and `unsigned long long` sizes.
+`UltraLong` is an implementation of long arithmetic. There is `UnsignedUltraLong`, too. Before use you should change settings (else it'll be your fault). `UltraLong` assumes that size of `unsigned int` is 32 bits and size of `unsigned long long` is 64 bits. If it's not true then `UltraLong` may make errors in calculations. If so, you can always open an issue with size of `unsigned int` and `unsigned long long`.
 ### Settings
 There are 5 private constants in `UltraLong` that are called "Settings":
 |Name|Description|Assumed to be|
@@ -17,10 +17,10 @@ There are 5 private constants in `UltraLong` that are called "Settings":
 ### Functions
 |Function|Is static|Description|
 |:-:     |:-:      |:-         |
-|`ModPow(a, b, mod)`  | ✓ |Reminder after dividing `a` to `b`-th power by `mod`|
-|`ToUINT()`| ☓ |Reminder after dividing `UltraLong` by 2<sup>32</sup>|
-|`ToULONG()`| ☓ |Reminder after dividing `UltraLong` by 2<sup>64</sup>|
-|`ToString()`| ☓ |Returns `std::string` with `UltraLong` in decimal notation|
+|`modPow(a, b, mod)`  | ✓ |Reminder after dividing `a` to `b`-th power by `mod`|
+|`toUINT()`| ☓ |Reminder after dividing `UltraLong` by 2<sup>32</sup>|
+|`toULONG()`| ☓ |Reminder after dividing `UltraLong` by 2<sup>64</sup>|
+|`toString()`| ☓ |Returns `std::string` with `UltraLong` in decimal notation|
 ### Computational complexity
 Let `n = LENGTH`
 |Operation|Complexity|
@@ -37,19 +37,24 @@ Let `n = LENGTH`
 
 ## Complex
 ### Description
-Actually, the `Complex` type is very restricted now because it is used only for `UltraLong` realisation. Some of basic operators are missing.
+The type that implements a complex number based on `long double`. Why not `complex <long double>`? Some compilers do not optimize the templates well.
 
 ## Random
 ### Description
-Random numbers generator. Create an object with `Random rnd = Random()` and use the functions below.
+Random numbers generator. Create an object with `Random rnd = Random()` or `Random rnd = Random(seed)` (`seed` is `long long` type) and use the functions below.
 ### Functions
 |Function      |Return type           |
 |:-:           |:-                    |
-|`next_int()`  | `int`                |
-|`next_long()` | `long long`          |
-|`next_uint()` | `unsigned int`       |
-|`next_ulong()`| `unsigned long long` |
-
+|`nextBool()`  | `bool`               |
+|`nextChar()`  | `char`               |
+|`nextSInt()`  | `short int`          |
+|`nextUSInt()` | `unsigned short int` |
+|`nextInt()`   | `int`                |
+|`nextLong()`  | `long long`          |
+|`nextUInt()`  | `unsigned int`       |
+|`nextULong()` | `unsigned long long` |
+|`nextDouble()`| `double`             |
+DIEHARD test result (using `nextInt()`) is in the eponymous file.
 ## Sequence
 ### Description
 An infinite sequence of numbers. Template class. Actually, it is some kind of abstract class or interface with several implementations that you can use out of the box.
@@ -69,5 +74,14 @@ A Fibonacci sequence (each number is a sum of the two previous ones). To create:
 By default, `a = 0` and `b = 1`.
 #### Primes
 A prime number sequence. **NOT TESTED.** To create: `Primes()`, you will get the sequence: *2*, *3*, *5*, *7*, ...
+## Math
+### Description
+A namespace that contains some useful functions.
+### Functions
+|Function      |Description|Return type|
+|:-:           |:-         |:-         |
+|`sqrt<T>(n)`  |Returns the square root of a number (type `T`).|`T`|
+|`ModPow<T>(n)`|Returns the square root of a number (type `T`).|`T`|
+
 # Donate
 If you decided to donate, think again. But if you haven't changed your mind yet, then I say thank you for supporting for a developing project! You can contact me on cat8ra@gmail.com

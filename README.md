@@ -54,6 +54,7 @@ Random numbers generator. Create an object with `Random rnd = Random()` or `Rand
 |`nextUInt()`  | `unsigned int`       |
 |`nextULong()` | `unsigned long long` |
 |`nextDouble()`| `double`             |
+
 DIEHARD test result (using `nextInt()`) is in the eponymous file.
 ## Sequence
 ### Description

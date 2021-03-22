@@ -19,7 +19,7 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 /// SOFTWARE.
 
-#pragma once
+//#pragma once
 
 #include <cmath>
 #include <string>
@@ -30,10 +30,13 @@
 #include <map>
 #include <unordered_set>
 #include <unordered_map>
-#include "ex.h"
+#include "extra_math.h"
 
 #pragma region Random
-Random::Random(long long seed = 0) {
+Random::Random() {
+    now = 0;
+}
+Random::Random(long long seed) {
     now = seed;
 }
 bool Random::nextBool() {
@@ -75,8 +78,8 @@ void Random::step() {
     now = now * a[((now % 3) + 3) % 3] + b[((now >> 7 % 3) + 4) % 3];
 }
 
-const long long Random::b[3] = { 14294630557836824467, 14294630557836824469, 9585689890975426951 };
-const long long Random::a[3] = { 15404481456978043987, 12899375936557105357, 7731693896872981757 };
+const long long Random::b[3] = { 5071258520982048659, 5071258520982048661, 362317854120651143 };
+const long long Random::a[3] = { 6181109420123268179, 3676003899702329549, -1491678139981794051};
 #pragma endregion
 
 #pragma region Complex
@@ -226,9 +229,10 @@ Complex Complex::conjugated(Complex a) {
                 value[1] = (unsigned int)((-n) / UINT_RANGE);
                 *this = -*this;
             }
-            else
+            else{
                 value[0] = n % UINT_RANGE;
                 value[1] = (unsigned int)(n / UINT_RANGE);
+            }
         }
         /*TODO*/
         /// <summary>
@@ -410,17 +414,17 @@ Complex Complex::conjugated(Complex a) {
 
         }
         UnsignedUltraLong UnsignedUltraLong::operator /(unsigned int b) {
-            
+
             UnsignedUltraLong res = UnsignedUltraLong();
 
             unsigned int i = LENGTH;
             unsigned long long prev = 0;
-            
+
             while (i != 0) {
                 i--;
-            
+
                 prev += this->value[i];
-                
+
                 res.value[i] = (unsigned int)(prev / b);
                 prev = (prev % b) * UINT_RANGE;
             }
@@ -558,7 +562,7 @@ Complex Complex::conjugated(Complex a) {
         }
 
         unsigned int UnsignedUltraLong::operator %(unsigned int b) {
-            
+
             unsigned int i = LENGTH;
             unsigned long long prev = 0;
 
@@ -647,7 +651,7 @@ Complex Complex::conjugated(Complex a) {
         UnsignedUltraLong UnsignedUltraLong::operator |=(UnsignedUltraLong right) {
             *this = *this | right;
             return *this;
-        } 
+        }
 
         UnsignedUltraLong UnsignedUltraLong::operator >>(unsigned long long right) {
 
@@ -876,8 +880,8 @@ Complex Complex::conjugated(Complex a) {
         void UnsignedUltraLong::multiply(const unsigned long long a[], const unsigned long long b[], unsigned long long res[]) {
 
             Complex fa[4 * UPPER_BOUND_LENGTH] = { Complex() },
-                    fb[4 * UPPER_BOUND_LENGTH] = { Complex() }, 
-                    fc[4 * UPPER_BOUND_LENGTH] = { Complex() }, 
+                    fb[4 * UPPER_BOUND_LENGTH] = { Complex() },
+                    fc[4 * UPPER_BOUND_LENGTH] = { Complex() },
                     fd[4 * UPPER_BOUND_LENGTH] = { Complex() };
 
             for (unsigned int i = 0; i < 2 * LENGTH; i++)
@@ -907,8 +911,8 @@ Complex Complex::conjugated(Complex a) {
             fastFourierTransformation(fa, n, true);
 
             for (size_t i = 0; i < 4 * LENGTH; ++i)
-                res[i] = unsigned long long(fa[i].real + 0.5);
-            
+                res[i] = (unsigned long long)(fa[i].real + 0.5);
+
         }
 
         void UnsignedUltraLong::fastFourierTransformation(Complex* a, unsigned int n, bool reverse = false) {
@@ -966,7 +970,7 @@ Complex Complex::conjugated(Complex a) {
             while (i != 0) {
                 i--;
                 res.value[i + n] = this->value[i];
-            } 
+            }
 
             return res;
 
@@ -1346,7 +1350,7 @@ T Math::nextPrime(T n, Math::PRIME_TESTS_OPTIMISE_LEVELS optimize_level/* = Math
 
 #pragma region Arithmetic
 template <class T>
-Arithmetic<T>::Arithmetic<T>(T start, T difference) {
+Arithmetic<T>::Arithmetic(T start, T difference) {
     this->start = start;
     this->now = start;
     this->difference = difference;
@@ -1369,7 +1373,7 @@ Arithmetic<T> Arithmetic<T>::renew() {
 
 #pragma region Geometric
 template <class T>
-Geometric<T>::Geometric<T>(T start, T denominator) {
+Geometric<T>::Geometric(T start, T denominator) {
     this->start = start;
     this->now = start;
     this->denominator = denominator;
@@ -1390,7 +1394,7 @@ Geometric<T> Geometric<T>::renew() {
 
 #pragma region Fibonacci
 template <class T>
-Fibonacci<T>::Fibonacci<T>(T start, T start1) {
+Fibonacci<T>::Fibonacci(T start, T start1) {
     this->start = start;
     this->start1 = start1;
     iter = 0;
@@ -1414,11 +1418,11 @@ template <class T>
 Fibonacci<T> Fibonacci<T>::renew() {
     return Fibonacci<T>(start, start1);
 }
-#pragma endregion     
+#pragma endregion
 
 #pragma region Primes
 template <class T>
-Primes<T>::Primes<T>() {
+Primes<T>::Primes() {
     this->start = T(2);
     this->now = this->start;
     iter = 0;
@@ -1482,7 +1486,7 @@ Primes<T> Primes<T>::renew() {
 
 #pragma region Matrix
     template <class T>
-    Matrix<T>::Matrix<T>(const std::vector<std::vector<T>> &arr) {
+    Matrix<T>::Matrix(const std::vector<std::vector<T>> &arr) {
 
         mx = arr;
         rows = mx.size();
@@ -1491,24 +1495,24 @@ Primes<T> Primes<T>::renew() {
         for (unsigned int i = 1; i < rows; i++)
             if (mx[i].size() < columns)
                 columns = mx[i].size();
-    
+
     }
 
     template <class T>
-    Matrix<T>::Matrix<T>(unsigned int r, unsigned int c, T &value) {
+    Matrix<T>::Matrix(unsigned int r, unsigned int c, T &value) {
 
         mx.resize(r);
-        
+
         for (unsigned int i = 0; i < r; i++)
             mx[i].assign(c, value);
-        
+
         columns = c;
         rows = r;
 
     }
 
     template <class T>
-    Matrix<T>::Matrix<T>(unsigned int r, unsigned int c) {
+    Matrix<T>::Matrix(unsigned int r, unsigned int c) {
 
         mx.resize(r);
 
@@ -1574,7 +1578,7 @@ Primes<T> Primes<T>::renew() {
         Matrix<T> ans = Matrix<T>(this->rows, b.columns);
 
         for (unsigned int i = 0; i < this->rows; i++)
-            for (unsigned int j = 0; j < b.columns; j++) 
+            for (unsigned int j = 0; j < b.columns; j++)
                 for (unsigned int k = 0; k < b.rows; k++)
                     ans.mx[i][j] += this->mx[i][k] * b.mx[k][j];
 
@@ -1596,7 +1600,7 @@ Primes<T> Primes<T>::renew() {
     }
 
     template <class T>
-    static Matrix<T> Matrix<T>::randomMatrix(unsigned int columns, unsigned int rows, T generator(void)) {
+    Matrix<T> Matrix<T>::randomMatrix(unsigned int columns, unsigned int rows, T generator(void)) {
 
         Matrix<T> ans = Matrix<T>(rows, columns);
 
@@ -1609,12 +1613,12 @@ Primes<T> Primes<T>::renew() {
     }
 
     template <class T>
-    static Matrix<T> Matrix<T>::transpose(Matrix<T> a) {
+    Matrix<T> Matrix<T>::transpose(Matrix<T> a) {
 
         Matrix<T> ans = Matrix(a.columns, a.rows);
 
         for (unsigned int i = 0; i < a.rows; i++)
-            for (unsigned int j = 0; j < a.columns; j++)    
+            for (unsigned int j = 0; j < a.columns; j++)
                 ans.mx[j][i] = a.mx[i][j];
 
         return ans;
@@ -1625,7 +1629,7 @@ Primes<T> Primes<T>::renew() {
         if (a.columns != a.rows)
             throw "You can't found the determinant of non-square matrix.";
         T ans = (T)0;
-        
+
         for (unsigned int i = 0; i < a.columns; i++)
         {
             T pre_ans = 1;
@@ -1657,10 +1661,18 @@ Primes<T> Primes<T>::renew() {
 
 #pragma region Polynomial
     Polynomial::Polynomial() { degree = 0; }
-
+    Polynomial Polynomial::operator =(Polynomial right) {
+        if (this == &right)
+            return *this;
+        else {
+            degree = right.degree;
+            cfs = right.cfs;
+            return *this;
+        }
+    }
     Polynomial::Polynomial(std::vector<long double> coefficients) {
 
-        unsigned int index = (unsigned int)coefficients.size(), 
+        unsigned int index = (unsigned int)coefficients.size(),
                      power = 0;
 
         degree = 0;
@@ -1678,19 +1690,19 @@ Primes<T> Primes<T>::renew() {
     }
 
     Polynomial Polynomial::operator +(Polynomial b) {
-        
+
         Polynomial ans = Polynomial();
         ans.cfs = this->cfs;
-        
+
         for (std::pair<unsigned int, long double> each : b.cfs)
             if (ans.cfs.find(each.first) != ans.cfs.end())
                 ans.cfs[each.first] += each.second;
             else
                 ans.cfs[each.first] = each.second;
-        
-        
+
+
         ans.degree = this->degree > b.degree ? this->degree : b.degree;
-        
+
         return ans;
 
     }
@@ -1699,13 +1711,13 @@ Primes<T> Primes<T>::renew() {
 
         Polynomial ans = Polynomial();
         ans.cfs = this->cfs;
-        
+
         for (std::pair<unsigned int, long double> each : b.cfs)
             if (ans.cfs.find(each.first) != ans.cfs.end())
                 ans.cfs[each.first] -= each.second;
             else
                 ans.cfs[each.first] = -each.second;
-        
+
         ans.ClearZeroes();
 
         return ans;
@@ -1722,15 +1734,15 @@ Primes<T> Primes<T>::renew() {
     }
 
     Polynomial Polynomial::Derivative(Polynomial a) {
-        
+
         Polynomial ans = Polynomial();
-        
+
         for (std::pair<unsigned int, long double> each : a.cfs)
             if (each.first != 0)
                 ans.cfs[each.first - 1] = each.second * each.first;
-        
+
         ans.degree = std::max(0u, a.degree - 1);
-        
+
         return ans;
 
     }
@@ -1752,7 +1764,7 @@ Primes<T> Primes<T>::renew() {
             return ans;
         }
 #pragma endregion
-    
+
     Polynomial::Solutions Polynomial::Solve(Polynomial a) {
         switch (a.degree) {
 
@@ -1766,8 +1778,27 @@ Primes<T> Primes<T>::renew() {
             return SolveLinear(a);
         case 2:
             return SolveQuadratic(a);
-        
+
         default: {
+            if (a.cfs.find(0) == a.cfs.end() || a.cfs[0]==0){
+                Polynomial b = Polynomial();
+                b.degree = a.degree - 1;
+                for (const std::pair<unsigned int, long double> &i : a.cfs){
+                    if (i.first != 0)
+                         b.cfs[i.first - 1] = i.second;
+                }
+                Solutions ans = Solve(b);
+                ans.Add(0);
+                Solutions ans2 = Solutions();
+                std::vector<long double> anses = ans.GetSolutions();
+                if (!anses.empty())
+                    ans2.Add(anses[0]);
+                for (size_t i = 1; i < anses.size(); i++){
+                    if (anses[i] - anses[i - 1] >= 3 * SOLVE_PRECISE)
+                        ans2.Add(anses[i]);
+                }
+                return ans2;
+            }
             Solutions ans = Solutions();
             std::vector<long double> der_zeroes = Solve(Polynomial::Derivative(a)).GetSolutions();
             if (der_zeroes.size() == 0){
@@ -1790,10 +1821,18 @@ Primes<T> Primes<T>::renew() {
                 if (a.IsNearRoot(x))
                     ans.Add(x);
             }
-            return ans;
+            Solutions ans2 = Solutions();
+            std::vector<long double> anses = ans.GetSolutions();
+            if (!anses.empty())
+                ans2.Add(anses[0]);
+            for (size_t i = 1; i < anses.size(); i++){
+                if (anses[i] - anses[i - 1] >= 50000 * SOLVE_PRECISE)
+                    ans2.Add(anses[i]);
+            }
+            return ans2;
         }
-        
-        }    
+
+        }
     }
 
     /*void Print(std::string var) {
@@ -1824,7 +1863,6 @@ Primes<T> Primes<T>::renew() {
     Polynomial::Solutions Polynomial::SolveQuadratic(Polynomial a) {
         Solutions ans = Solutions();
         long double discriminant = a.cfs[1] * a.cfs[1] - 4 * a.cfs[0] * a.cfs[2];
-        
         if (discriminant > 0) {
             if (a.cfs[2] > 0) {
                 ans.Add((-a.cfs[1] - sqrtl(discriminant)) / (2 * a.cfs[2]));
@@ -1835,7 +1873,7 @@ Primes<T> Primes<T>::renew() {
                 ans.Add((-a.cfs[1] - sqrtl(discriminant)) / (2 * a.cfs[2]));
             }
         }
-        else if (discriminant == 0) {
+        else if (std::abs(discriminant) < Polynomial::SOLVE_PRECISE) {
             ans.Add(-a.cfs[1] / (2 * a.cfs[2]));
         }
 
@@ -1865,7 +1903,7 @@ Primes<T> Primes<T>::renew() {
         if (cfs[degree] * powl(L, degree) < cfs[degree] * powl(R, degree))
             while (R - L > SOLVE_PRECISE) {
                 long double M = (L + R) / 2;
-                if (Value(M) > 0 || isnan(Value(M)))
+                if (Value(M) > 0 || std::isnan(Value(M)))
                     R = M;
                 else
                     L = M;
@@ -1873,7 +1911,7 @@ Primes<T> Primes<T>::renew() {
         else
             while (R - L > SOLVE_PRECISE) {
                 long double M = (L + R) / 2;
-                if (Value(M) < 0 || isnan(Value(M)))
+                if (Value(M) < 0 || std::isnan(Value(M)))
                     R = M;
                 else
                     L = M;
@@ -1939,7 +1977,7 @@ long double Polynomial::MAX_ROOT = 1e30;
             }
             default:
                 break;
-            }         
+            }
         }
         color[v] = 2;
         return false;
@@ -1994,28 +2032,28 @@ protected:
             return 0xDEADBEEF;
         }
 
-        const enum class SYMBOL {NONE, NUMBER, OPERATOR, BRACKETS};
+        enum class SYMBOL {NONE, NUMBER, OPERATOR, BRACKETS};
         const std::unordered_map<char, SYMBOL> sym = { {'*', SYMBOL::OPERATOR},
-              {'/', SYMBOL::OPERATOR}, {'^', SYMBOL::OPERATOR}, 
+              {'/', SYMBOL::OPERATOR}, {'^', SYMBOL::OPERATOR},
               {'(', SYMBOL::BRACKETS}, {')', SYMBOL::BRACKETS} };
 
         const std::unordered_map<char, long double> OPERATOR_CODES = {
               {'+', 0}, {'-', 1}, {'*', 2}, {'/', 3}, {'^', 4} };
         const char OPERATORS[] = {'+', '-', '*', '/', '^'};
-        
+
         unsigned int index = 0, balance = 0;
-        
+
         SYMBOL last = SYMBOL::NONE;
-        
+
         unsigned int start_ = 0, end_ = 0;
-        
+
         std::vector<std::pair<SYMBOL, long double>> parsed;
 
         while (index < s.length()) {
             SYMBOL new_;
             if (sym.find(s[index]) != sym.end())
                 new_ = sym.at(s[index]);
-            else if ('0' <= s[index] && s[index] <= '9' || s[index] == '.') {
+            else if ( ('0' <= s[index] && s[index] <= '9') || s[index] == '.' ) {
                 new_ = SYMBOL::NUMBER;
             }
             else if (s[index] == '+' || s[index] == '-') {
@@ -2076,7 +2114,7 @@ protected:
                         break;
                     }
                     default: {
-                        break; 
+                        break;
                     }
                 }
             }
@@ -2100,7 +2138,7 @@ protected:
                 if ()
             }
         }*/
-
+        return 0xDEADBEEF; //TODO
     }
 
 std::string Parser::getError() {
@@ -2109,11 +2147,11 @@ std::string Parser::getError() {
 
 void Parser::generate_error_message() {
         std::unordered_map<int, std::string> error_codes = {
-            {0, "OK"}, 
+            {0, "OK"},
             {1, "Empty block"},
-            {2, "Unknown symbol"}, 
+            {2, "Unknown symbol"},
             {3, "Brackets mismatch"},
-            {4, "Error while reading number"} 
+            {4, "Error while reading number"}
         };
         error = error_codes.at(code) + ", index = " + std::to_string(error_index);
 }

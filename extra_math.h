@@ -33,6 +33,7 @@
 
 struct Random {
 public:
+    Random();
     Random(long long seed);
     bool nextBool();
     char nextChar();
@@ -329,7 +330,7 @@ protected:
 namespace Math {
 
     enum class PRIME_TESTS_OPTIMISE_LEVELS { O1, O2, O3 };
-    const PRIME_TESTS_OPTIMISE_LEVELS PRIME_TESTS_OPTIMISE_LEVE = Math::PRIME_TESTS_OPTIMISE_LEVELS::O3;
+    const PRIME_TESTS_OPTIMISE_LEVELS PRIME_TESTS_OPTIMISE_LEVEL = Math::PRIME_TESTS_OPTIMISE_LEVELS::O3;
 
     template <class T>
     T sqrt(T n);
@@ -529,6 +530,8 @@ public:
     Polynomial operator +(Polynomial b);
 
     Polynomial operator -(Polynomial b);
+
+    Polynomial operator =(Polynomial right);
 
     long double Value(long double x);
 
